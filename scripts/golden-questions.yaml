@@ -1,0 +1,45 @@
+# Golden Questions — Evaluation Set
+# Used by src/evaluation/evaluator.py to measure knowledge engine quality.
+# Add new questions as you discover gaps (👎 feedback auto-appends here).
+#
+# 🫏 These questions are the road inspection checklist.
+# If the donkey can answer them all well, the road is solid.
+
+questions:
+  # --- RAG & Retrieval ---
+  - question: "What is RAG and why is it used instead of fine-tuning?"
+    expected_topics: ["rag", "retrieval", "embeddings", "fine-tuning"]
+
+  - question: "What embedding models were tested in the rag-chatbot project?"
+    expected_topics: ["embeddings", "titan-embeddings", "rag-chatbot"]
+
+  - question: "Why did AWS Titan embeddings score so low and how was it fixed?"
+    expected_topics: ["titan-embeddings", "normalization", "cosine-similarity"]
+
+  # --- GraphRAG ---
+  - question: "What is GraphRAG and how does it differ from plain vector search?"
+    expected_topics: ["graphrag", "graph-database", "vector-search", "knowledge-graph"]
+
+  - question: "Why do we need both a vector database and a graph database?"
+    expected_topics: ["vector-database", "graph-database", "graphrag"]
+
+  # --- AI Engineering Skills ---
+  - question: "What are the 6 core AI engineer skills beyond prompting?"
+    expected_topics: ["evaluation", "monitoring", "feedback-loops", "cicd"]
+
+  - question: "How does the knowledge engine improve over time with feedback?"
+    expected_topics: ["feedback-loops", "wiki", "evaluation"]
+
+  # --- Cloud Providers ---
+  - question: "What are the cost differences between running on Local, AWS, and Azure?"
+    expected_topics: ["aws", "azure", "local", "cost"]
+
+  - question: "How does the credential isolation work for AWS personal account?"
+    expected_topics: ["aws", "credentials", "rag-chatbot"]
+
+  # --- AI Security ---
+  - question: "What is the difference between AI for Security vs Security for AI?"
+    expected_topics: ["ai-security", "security-engineering"]
+
+  - question: "What is OWASP LLM Top 10 and why does it matter?"
+    expected_topics: ["owasp", "llm-security", "ai-security"]
