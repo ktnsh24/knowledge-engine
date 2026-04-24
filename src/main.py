@@ -11,7 +11,7 @@ from src.graphstore.factory import create_graph_store
 from src.chat.engine import ChatEngine
 from src.chat.feedback import FeedbackProcessor
 from src.wiki.generator import WikiGenerator
-from src.routes import chat, wiki, ingest, health, feedback
+from src.routes import chat, wiki, ingest, health, feedback, eval as eval_route
 
 logger = structlog.get_logger()
 
@@ -73,6 +73,7 @@ def create_app() -> FastAPI:
     app.include_router(ingest.router, prefix="/ingest", tags=["ingestion"])
     app.include_router(wiki.router, prefix="/wiki", tags=["wiki"])
     app.include_router(feedback.router, prefix="/feedback", tags=["feedback"])
+    app.include_router(eval_route.router, prefix="/eval", tags=["evaluation"])
 
     return app
 
