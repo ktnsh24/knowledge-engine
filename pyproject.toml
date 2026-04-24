@@ -1,0 +1,80 @@
+[tool.poetry]
+name = "knowledge-engine"
+version = "0.1.0"
+description = "Self-improving knowledge base using GraphRAG — multi-provider (Local/AWS/Azure)"
+authors = ["Ketan Sahu"]
+readme = "README.md"
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+# Web framework
+fastapi = "^0.115.0"
+uvicorn = { extras = ["standard"], version = "^0.32.0" }
+
+# LLM providers
+litellm = "^1.52.0"
+boto3 = "^1.35.0"                    # AWS Bedrock
+openai = "^1.54.0"                   # Azure OpenAI
+
+# Vector stores
+chromadb = "^0.5.0"                  # Local
+azure-search-documents = "^11.6.0"  # Azure AI Search
+
+# Graph stores
+neo4j = "^5.25.0"                    # Local (Docker)
+# DynamoDB via boto3 (AWS)
+# Cosmos DB via azure-cosmos (Azure)
+azure-cosmos = "^4.9.0"
+networkx = "^3.4.0"                  # In-memory graph + algorithms
+
+# Embeddings
+numpy = "^1.26.0"
+
+# Config
+pydantic-settings = "^2.6.0"
+python-dotenv = "^1.0.0"
+
+# Wiki generation
+mkdocs-material = "^9.5.0"          # Wiki website
+jinja2 = "^3.1.0"                   # Wiki templates
+
+# Chat UI
+streamlit = "^1.40.0"               # Demo interface
+
+# File watching (auto-rebuild on doc change)
+watchdog = "^6.0.0"
+
+# Evaluation
+ragas = "^0.2.0"                    # RAG evaluation
+pyyaml = "^6.0.0"                   # Golden questions
+
+# Utilities
+httpx = "^0.28.0"
+tenacity = "^9.0.0"                  # Retries
+structlog = "^24.4.0"               # Structured logging
+rich = "^13.9.0"                    # Pretty terminal output
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+httpx = "^0.28.0"
+ruff = "^0.8.0"
+
+[tool.poetry.scripts]
+start = "uvicorn src.main:app --reload --port 8200"
+ui    = "streamlit run ui/app.py"
+ingest = "python -m src.ingestion.scanner"
+build-wiki = "python -m src.wiki.generator"
+test  = "pytest tests/ -v"
+lint  = "ruff check src/ tests/"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
