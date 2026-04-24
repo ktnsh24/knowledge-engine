@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -7,6 +7,12 @@ class ProviderType(str, Enum):
     LOCAL = "local"
     AWS = "aws"
     AZURE = "azure"
+
+
+class ConfidenceLevel(str, Enum):
+    HIGH = "high"        # retrieval_score >= 0.70, answer grounded in docs
+    PARTIAL = "partial"  # retrieval_score 0.40–0.69, thin coverage
+    GAP = "gap"          # retrieval_score < 0.40, likely hallucination risk
 
 
 # ---------------------------------------------------------------------------
@@ -20,8 +26,8 @@ class Topic(BaseModel):
     description: str = ""
     source_repos: list[str] = []     # which repos mention this topic
     source_files: list[str] = []     # which files mention this topic
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Relationship(BaseModel):
@@ -67,7 +73,7 @@ class WikiPage(BaseModel):
     donkey_analogy: str              # the 🫏 analogy for this topic
     sources: list[str] = []         # source files used
     connected_topics: list[str] = [] # related topic IDs
-    generated_at: datetime = Field(default_factory=datetime.utcnow)
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     version: int = 1
     quality_score: float = 0.0      # from evaluation
 
@@ -79,7 +85,7 @@ class WikiPage(BaseModel):
 class ChatMessage(BaseModel):
     role: str                        # "user" | "assistant"
     content: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ChatRequest(BaseModel):
@@ -98,6 +104,31 @@ class ChatResponse(BaseModel):
     latency_ms: int = 0
     provider: ProviderType = ProviderType.LOCAL
     session_id: str = "default"
+    # Gap detection fields
+    confidence: ConfidenceLevel = ConfidenceLevel.HIGH
+    is_gap: bool = False
+    gap_id: str | None = None
+    gap_reason: str = ""
+    gap_suggestion: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Knowledge Gap Models
+# ---------------------------------------------------------------------------
+
+class KnowledgeGap(BaseModel):
+    """A question that the knowledge base couldn't answer well."""
+    id: str
+    question: str
+    confidence: ConfidenceLevel
+    retrieval_score: float
+    chunk_count: int
+    topic_count: int
+    reason: str                      # human-readable explanation
+    suggestion: str                  # what to do to fix it
+    status: str = "open"             # "open" | "resolved"
+    detected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    resolved_at: datetime | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +143,7 @@ class FeedbackSignal(BaseModel):
     thumbs_up: bool                  # True = good, False = bad
     correction: str = ""             # optional user correction
     missing_info: str = ""           # what was missing from the answer
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # ---------------------------------------------------------------------------
