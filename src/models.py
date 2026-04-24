@@ -94,6 +94,12 @@ class ChatRequest(BaseModel):
     provider: ProviderType = ProviderType.LOCAL
 
 
+class AnswerSource(str, Enum):
+    DOCS = "docs"              # grounded in ingested docs (HIGH confidence)
+    DOCS_PARTIAL = "docs_partial"  # docs + LLM fills gaps (PARTIAL confidence)
+    LLM_KNOWLEDGE = "llm_knowledge"  # no docs found — LLM answers from training data (GAP)
+
+
 class ChatResponse(BaseModel):
     answer: str
     donkey_analogy: str              # always included
@@ -110,6 +116,9 @@ class ChatResponse(BaseModel):
     gap_id: str | None = None
     gap_reason: str = ""
     gap_suggestion: str = ""
+    # Answer source — tells the UI WHERE the answer came from
+    answer_source: AnswerSource = AnswerSource.DOCS
+    candidate_id: str | None = None  # set when answer saved as candidate for review
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +138,26 @@ class KnowledgeGap(BaseModel):
     status: str = "open"             # "open" | "resolved"
     detected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     resolved_at: datetime | None = None
+
+
+class WikiCandidate(BaseModel):
+    """
+    An LLM-generated answer to a GAP question — awaiting human review.
+
+    When confidence=GAP, the LLM answers from training knowledge (not docs).
+    That answer is saved here as a candidate. The user reviews it:
+      👍 promote  → writes to wiki/feedback/verified-answers.md
+                  → next ingest picks it up → future answers are doc-grounded
+      👎 discard  → discarded, question stays in gaps as unresolved
+    """
+    id: str
+    question: str
+    answer: str
+    donkey_analogy: str
+    gap_id: str                      # links back to the KnowledgeGap
+    status: str = "pending"          # "pending" | "promoted" | "discarded"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    promoted_at: datetime | None = None
 
 
 # ---------------------------------------------------------------------------

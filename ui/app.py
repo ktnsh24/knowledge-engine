@@ -92,6 +92,51 @@ with st.sidebar:
         st.caption("No gap data yet — ask some questions first")
 
     st.divider()
+
+    # --- Candidates review panel ---
+    st.header("🔵 Candidates for Review")
+    st.caption("LLM answers to gap questions — promote to add to your knowledge base")
+    try:
+        r = httpx.get(f"{API_BASE}/wiki/candidates?status=pending", timeout=5)
+        cdata = r.json()
+        csummary = cdata.get("summary", {})
+        candidates = cdata.get("candidates", [])
+
+        col_p, col_pr, col_d = st.columns(3)
+        col_p.metric("⏳ Pending", csummary.get("pending", 0))
+        col_pr.metric("✅ Promoted", csummary.get("promoted", 0))
+        col_d.metric("🗑 Discarded", csummary.get("discarded", 0))
+
+        if candidates:
+            with st.expander(f"Review {len(candidates)} pending answer(s)", expanded=False):
+                for cand in candidates[:5]:
+                    st.markdown(f"**Q:** {cand['question']}")
+                    st.markdown(f"**A:** {cand['answer'][:300]}...")
+                    st.info(cand.get("donkey_analogy", ""))
+                    col_promote, col_discard, _ = st.columns([1, 1, 4])
+                    with col_promote:
+                        if st.button("👍 Promote", key=f"promote_{cand['id']}"):
+                            try:
+                                httpx.post(f"{API_BASE}/wiki/candidates/{cand['id']}/promote", timeout=5)
+                                st.success("Promoted! Run ingestion to absorb into knowledge base.")
+                                st.rerun()
+                            except Exception as ex:
+                                st.error(str(ex))
+                    with col_discard:
+                        if st.button("👎 Discard", key=f"discard_{cand['id']}"):
+                            try:
+                                httpx.post(f"{API_BASE}/wiki/candidates/{cand['id']}/discard", timeout=5)
+                                st.warning("Discarded.")
+                                st.rerun()
+                            except Exception as ex:
+                                st.error(str(ex))
+                    st.divider()
+        else:
+            st.caption("No pending candidates")
+    except Exception:
+        st.caption("No candidate data yet")
+
+    st.divider()
     st.header("🗺️ Topics")
     try:
         r = httpx.get(f"{API_BASE}/wiki/topics", timeout=5)
@@ -176,9 +221,9 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
                 if donkey:
                     st.info(donkey)
 
-                # Show confidence indicator
+                # Show confidence / source indicator
                 if confidence == "gap":
-                    st.error(f"🔴 **Knowledge Gap detected** — this question isn't in your docs.\n\n{gap_reason}\n\n💡 {gap_suggestion}")
+                    st.error(f"🔵 **LLM Knowledge (not in your docs yet)**\n\n{gap_reason}\n\n💡 Review the candidate answer in the sidebar — promote with 👍 to add it to your knowledge base.")
                 elif confidence == "partial":
                     st.warning(f"🟡 **Partial coverage** — answer may be incomplete.\n\n{gap_reason}\n\n💡 {gap_suggestion}")
                 else:
