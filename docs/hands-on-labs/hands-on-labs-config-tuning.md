@@ -26,6 +26,7 @@
 - [Lab 16: Metadata Filtering](#lab-16-metadata-filtering--pre-sort-the-warehouse-aisle)
 - [Lab 17: Chunk Strategy](#lab-17-chunk-strategy--how-the-post-office-pre-sorts)
 - [Lab 18: Eval Thresholds](#lab-18-eval-thresholds--how-strict-is-the-report-card)
+- [Lab 19: LLM-as-Judge Evaluation](#lab-19-llm-as-judge-evaluation--can-a-smarter-llm-grade-the-donkeys-report-card)
 
 ---
 
@@ -518,3 +519,61 @@ Calibrate the evaluator before trusting it. A lax threshold makes everything loo
 
 ### 🫏 Donkey takeaway
 The report card itself can be lenient or strict — the donkey did the same trip, but a strict teacher fails the delivery for the smallest miss.
+
+---
+
+## Lab 19: LLM-as-Judge Evaluation — "Can a smarter LLM grade the donkey's report card?"
+
+**Config:** `EVAL_MODE` (default: `rule_based`)
+**What it controls:** Whether evaluation uses Python rules (cheap, deterministic) or a second LLM call (expensive, semantic).
+**Hypothesis:** Rule-based eval misses semantic hallucinations (the answer paraphrases something not in the chunks but uses the same keywords). LLM-as-judge catches them at ~$0.001/eval.
+
+### Why this matters
+Rule-based evaluation (`EVAL_MODE=rule_based`) splits the answer into sentences, extracts keywords, and checks if they appear in the retrieved chunks. It's free and instant — but it CANNOT detect when the donkey paraphrases a hallucination using words that happen to be in the backpack.
+
+LLM-as-judge (`EVAL_MODE=llm_judge`) sends the question, retrieved chunks, and answer to a second cheap LLM (e.g. Claude Haiku, GPT-4o-mini) with a structured rubric: "Score faithfulness 0–1. Did every claim come from the provided context? List any unsupported claims." It catches semantic hallucinations rules miss.
+
+### Setup
+1. Add `EVAL_MODE=rule_based` to `.env`
+2. Pick a "judge" LLM in `.env`:
+   - Local: `JUDGE_LLM_PROVIDER=ollama` + `JUDGE_LLM_MODEL=llama3.2`
+   - AWS: `JUDGE_LLM_PROVIDER=bedrock` + `JUDGE_LLM_MODEL=anthropic.claude-haiku-...`
+   - Azure: `JUDGE_LLM_PROVIDER=azure_openai` + `JUDGE_LLM_MODEL=gpt-4o-mini`
+3. Implement the judge prompt (see template below)
+4. Run the same 3 hard questions (Q1–Q3) with both modes
+5. Compare scores
+
+### The judge prompt template
+```text
+You are a strict evaluator of RAG answers. Given:
+- QUESTION: {question}
+- RETRIEVED_CONTEXT: {chunks}
+- ANSWER: {answer}
+
+Score the answer on:
+1. faithfulness (0.0–1.0): Did every claim come from RETRIEVED_CONTEXT?
+2. completeness (0.0–1.0): Did the answer use the relevant parts of RETRIEVED_CONTEXT?
+3. relevance (0.0–1.0): Did the answer address the QUESTION?
+
+Return strict JSON: {"faithfulness": 0.x, "completeness": 0.x, "relevance": 0.x, "unsupported_claims": ["..."]}
+```
+
+### Results table (fill in as you run)
+| Question | Rule-based faithfulness | LLM-judge faithfulness | Divergence | Why? |
+|---|---|---|---|---|
+| Q1 (clean) | ___ | ___ | ___ | ___ |
+| Q2 (paraphrased hallucination) | ___ | ___ | ___ | LLM-judge catches it; rules miss it |
+| Q3 (out-of-scope) | ___ | ___ | ___ | Both should score low |
+
+### Cost comparison
+| Mode | Cost per eval | Latency added | Determinism |
+|---|---|---|---|
+| `rule_based` | €0 | ~1ms | ✅ Same input → same score |
+| `llm_judge` (Haiku) | ~$0.001 | ~500–1500ms | ❌ May vary slightly across runs |
+| `llm_judge` (GPT-4o) | ~$0.01 | ~1–3s | ❌ May vary |
+
+### What we learned
+Rule-based eval is the right default — it's free, fast, and catches obvious failures. LLM-as-judge is the right tool for the borderline cases that rule-based flags as `marginal`. Production pattern: run rule-based on every request, run LLM-judge only on samples flagged as marginal or on a daily nightly batch over the golden dataset. Never run LLM-judge on 100% of traffic — the cost adds up.
+
+### 🫏 Donkey takeaway
+Rule-based eval is a clipboard-with-checkboxes the stable hand uses on every delivery. LLM-as-judge is the senior trainer who comes in once a week, reviews a sample of trips, and catches the subtle mistakes the checkboxes miss. You need both — but you can't afford the trainer at every door.
