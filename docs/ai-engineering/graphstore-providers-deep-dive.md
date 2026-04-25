@@ -35,7 +35,7 @@ All three providers implement [`BaseGraphStore`](graphstore-interface-deep-dive.
 | Practical scale | ~1M nodes before tuning | ~100k topics (scan cost) | ~100k topics (scan cost) |
 | When to use | Dev, eval, anything needing multi-hop | AWS-native, hop-1 fan-out is enough | Azure-native, hop-1 fan-out is enough |
 
-- 🫏 **Donkey:** Three paper maps. Neo4j is drawn in proper graph ink with all the roads visible at once. DynamoDB is the same map rolled up as two columns of "from–to" rows. Cosmos is the map pinned to the wall as one document per town and one per road.
+- 🫏 **Donkey:** Same road map drawn three different ways — Neo4j as a proper graph, DynamoDB as two "from–to" columns, Cosmos as one document per town and per road.
 
 ---
 

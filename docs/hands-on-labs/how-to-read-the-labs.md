@@ -41,7 +41,7 @@ The 30-odd labs in this repo are **NOT 30 different metrics**. They are **30 dif
 
 So when Phase-1 Lab 2 reports `graph_completeness=0.78, faithfulness=0.91`, those numbers exist because that's how we tell whether **changing the graph traversal depth from 1 to 2** made the system better or worse than the Phase-1 Lab 1 baseline. **The yardstick doesn't change between labs — only the knob you're turning does.**
 
-🫏 **Donkey lens:** the report card always grades the same 6 subjects. Each lab is a different lesson plan. The report card is how you tell whether the lesson worked.
+🫏 **Donkey lens:** the report card always grades the same six subjects — each lab is a different lesson plan for those subjects.
 
 ---
 
@@ -60,7 +60,7 @@ Every lab in this repo reports against these 6 numbers. Memorise them once and t
 
 There is also a composite **overall_pass_rate** = fraction of golden questions that score ≥ threshold across the 4 quality metrics. Pass threshold defaults to **0.65** (looser than rag-chatbot because the graph step adds variance).
 
-🫏 **Donkey lens:** completeness = was the map detailed enough? recall = did the donkey grab the right backpacks? faithfulness = did the donkey copy from the backpacks instead of inventing? hallucination_rate = how often did the donkey add packages from its own pocket? latency + cost = how long the round-trip took and how much hay it ate.
+🫏 **Donkey lens:** these six metrics together grade the donkey's whole trip — was the map good, the right backpacks grabbed, the answer faithful, no invented packages, and how long and costly the round-trip was.
 
 ---
 
@@ -115,7 +115,7 @@ Applying the 5-question method to one of the simplest labs:
 
 When you then read a results row like `chunk_size=200 → retrieval=0.81, completeness=0.62`, those numbers tell you: ✅ the hypothesis held — precision went up, completeness fell. The takeaway writes itself.
 
-🫏 **Donkey lens:** small backpack pockets (200) = each pocket holds one tight idea, easy to grab the right one, but multi-step answers need 3 pockets instead of 1. Big pockets (1000) = fewer pockets to carry, each holds the full story, but the donkey grabs irrelevant text along with the relevant text.
+🫏 **Donkey lens:** small backpack pockets (200) hold one tight idea but multi-step answers need 3 pockets; big pockets (1000) carry the full story but pull in irrelevant text alongside.
 
 ---
 

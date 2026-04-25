@@ -28,7 +28,7 @@ Concretely, in this repo:
 - **Plain RAG** would answer "How does Titan normalisation affect retrieval?" by retrieving the 5 chunks most similar to that sentence. If the fix is documented in three different chunks (one in `evaluation-framework.md`, one in `aws-services.md`, one in a lab result), and only one of them ranks in the top 5, you get a partial answer.
 - **GraphRAG** retrieves the 5 chunks AND walks the graph from the entity `Titan Embeddings` along the edges `IMPROVES → Retrieval Score` and `USES → Cosine Similarity` to surface the other two chunks even if they didn't rank top 5 by pure semantic similarity.
 
-🫏 **Donkey lens:** plain RAG gives the donkey GPS coordinates and lets it pick the closest pickups by distance. GraphRAG also gives the donkey a paper map showing which towns connect to which — so when a delivery note says "Titan", the donkey checks the GPS warehouse for the nearest backpacks AND follows the map to neighbouring towns whose backpacks the GPS would have skipped.
+🫏 **Donkey lens:** plain RAG hands the donkey GPS coordinates to find the closest backpacks; GraphRAG also gives a paper map of which towns connect, so the donkey grabs nearby-by-distance AND nearby-by-relationship.
 
 ---
 
@@ -43,7 +43,7 @@ Both stores answer different questions:
 
 Run them together and the weaknesses cancel. Vector search finds relevant *text*; graph traversal finds relevant *neighbours of that text's entities*. The LLM gets both.
 
-🫏 **Donkey lens:** the GPS warehouse tells the donkey *where the closest backpacks are*. The paper map tells the donkey *which towns are politically related to the destination town*. A good delivery uses both — closest backpacks plus the official town hierarchy.
+🫏 **Donkey lens:** the GPS warehouse finds the closest backpacks and the paper map shows which towns are related — a good delivery uses both.
 
 ---
 
@@ -201,7 +201,7 @@ GraphRAG adds two real costs: an extra LLM call per chunk during ingestion (to e
 
 Use GraphRAG when at least two of the following are true: corpus has many cross-references, users ask multi-hop questions ("how does X compare to Y given Z?"), the same entity appears in many docs under different phrasings, or you want auditable explanations ("the answer mentions X because the graph connects X to Y via `IMPROVES`, evidence: …").
 
-🫏 **Donkey lens:** if your village has one road and three houses, you don't need a paper map. The donkey will find every house on its own. The map starts paying for itself the moment you have multiple villages with shared roads.
+🫏 **Donkey lens:** if your village has one road and three houses you don't need a paper map — it only pays off once you have multiple villages with shared roads.
 
 ---
 

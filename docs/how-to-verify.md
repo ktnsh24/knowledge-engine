@@ -19,7 +19,7 @@
 
 ## 🫏 Donkey Analogy First
 
-> Think of the knowledge engine as a donkey (🫏) delivering packages. The graph is the road map — the more connected the roads, the faster and more accurately the donkey delivers. You want to *see* the road map growing, not just trust it's happening.
+> 🫏 The knowledge engine is a donkey delivering packages along a road map (the graph) — verifying = checking the roads are actually being drawn, not just trusting it.
 
 ---
 
