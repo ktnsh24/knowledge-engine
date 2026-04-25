@@ -1,0 +1,520 @@
+# Hands-on Labs — Config Tuning (Tier 1–5)
+
+> **Why these labs exist:** This is the AI-engineering interview answer. When asked "how would you tune this system?" the answer is a guided tour of these sweeps + their trade-offs.
+>
+> **How to run:** Each lab changes ONE config in `.env`, runs the same 3 questions, records the metrics, and explains the trade-off.
+>
+> **🫏 Donkey lens:** Each lab ends with a donkey takeaway summarising the trade-off in plain language.
+
+## Table of Contents
+- [Setup — Common to all labs](#setup--common-to-all-labs)
+- [Lab 1: Chunk Size Sweep](#lab-1-chunk-size-sweep--how-big-should-each-backpack-pocket-be)
+- [Lab 2: Chunk Overlap Sweep](#lab-2-chunk-overlap-sweep--should-pockets-share-content-at-the-edges)
+- [Lab 3: top_k Sweep](#lab-3-top_k-sweep--how-many-pockets-should-the-donkey-carry)
+- [Lab 4: Temperature Sweep](#lab-4-temperature-sweep--how-creative-should-the-donkey-be)
+- [Lab 5: System Prompt Sweep](#lab-5-system-prompt-sweep--strict-vs-lax-delivery-note)
+- [Lab 6: Embedding Model Sweep](#lab-6-embedding-model-sweep--smaller-vs-bigger-gps-coordinates)
+- [Lab 7: Reranker On/Off](#lab-7-reranker-onoff--second-pass-quality-check)
+- [Lab 8: Hybrid Search On/Off](#lab-8-hybrid-search-onoff--gps-plus-keyword-radio)
+- [Lab 9: Max Tokens Sweep](#lab-9-max-tokens-sweep--cargo-capacity-of-the-reply)
+- [Lab 10: Distance Metric Sweep](#lab-10-distance-metric-sweep--how-to-measure-gps-closeness)
+- [Lab 11: HNSW M Sweep](#lab-11-hnsw-m-sweep--how-many-stadium-signs-per-junction)
+- [Lab 12: HNSW ef_construction Sweep](#lab-12-hnsw-ef_construction-sweep--build-time-quality-of-the-sign-network)
+- [Lab 13: HNSW ef_search Sweep](#lab-13-hnsw-ef_search-sweep--how-many-signs-to-check-at-query-time)
+- [Lab 14: Query Rewriting On/Off](#lab-14-query-rewriting-onoff--rewrite-vague-delivery-notes)
+- [Lab 15: Multi-Query Sweep](#lab-15-multi-query-sweep--ask-the-question-n-different-ways)
+- [Lab 16: Metadata Filtering](#lab-16-metadata-filtering--pre-sort-the-warehouse-aisle)
+- [Lab 17: Chunk Strategy](#lab-17-chunk-strategy--how-the-post-office-pre-sorts)
+- [Lab 18: Eval Thresholds](#lab-18-eval-thresholds--how-strict-is-the-report-card)
+
+---
+
+## Setup — Common to all labs
+
+1. Make sure the API is running: `poetry run uvicorn src.main:app --port 8200 --reload`
+2. Make sure backing stores are up: `docker compose up -d neo4j chromadb`
+3. Have the 3 fixed test questions ready:
+   - **Q1:** "What is the donkey analogy in this codebase?"
+   - **Q2:** "How does the rag-chatbot ingestion pipeline work end-to-end?"
+   - **Q3:** "What vector store does ai-gateway use and why?"
+4. Each lab takes ~5–10 min: change config → restart/re-ingest → run questions → record table
+
+---
+
+## Lab 1: Chunk Size Sweep — "How big should each backpack pocket be?"
+
+**Config:** `RAG_CHUNK_SIZE` (default: `500`)
+**What it controls:** Number of characters per chunk during ingestion.
+**Hypothesis:** Small chunks = precise but miss cross-section context; large chunks = more context but lower retrieval precision.
+
+### Setup
+1. Set `RAG_CHUNK_SIZE=200` in `.env`
+2. Re-ingest: `poetry run python -m src.ingestion.run`
+3. Run the same 3 questions (Q1–Q3 from common setup)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 200 | ___ | ___ | ___ | ___ | ___ |
+| 500 | ___ | ___ | ___ | ___ | ___ |
+| 1000 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Small chunks isolate facts cleanly but split arguments across boundaries; the LLM ends up retrieving 5 fragments that each say half the story. Large chunks include more context but dilute the embedding (one vector covers many topics) and waste prompt budget. Rule of thumb: 500 characters is a strong default for technical markdown; go to 1000 for narrative docs, 200 only for FAQ-style snippets.
+
+### 🫏 Donkey takeaway
+Tiny pockets in the backpack mean each one holds one clean fact, but the donkey forgets how facts connect; giant pockets carry the whole chapter but the GPS coordinates point to a vague middle.
+
+---
+
+## Lab 2: Chunk Overlap Sweep — "Should pockets share content at the edges?"
+
+**Config:** `RAG_CHUNK_OVERLAP` (default: `100`)
+**What it controls:** Characters duplicated between adjacent chunks.
+**Hypothesis:** Higher overlap = better answers spanning section boundaries, more storage cost.
+
+### Setup
+1. Set `RAG_CHUNK_OVERLAP=0` in `.env`
+2. Re-ingest: `poetry run python -m src.ingestion.run`
+3. Run the same 3 questions (Q1–Q3)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 0 | ___ | ___ | ___ | ___ | ___ |
+| 100 | ___ | ___ | ___ | ___ | ___ |
+| 200 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Zero overlap loses any fact that straddles the cut line; 200 overlap recovers them but inflates the index by ~20% and pays for it on every query. Sweet spot is usually 10–20% of `chunk_size`.
+
+### 🫏 Donkey takeaway
+Letting two backpack pockets overlap a few words means a sentence cut in half is still complete in at least one pocket — at the price of carrying the same words twice.
+
+---
+
+## Lab 3: top_k Sweep — "How many pockets should the donkey carry?"
+
+**Config:** `RAG_TOP_K` (default: `5`)
+**What it controls:** Number of chunks pulled from the vector store and stuffed into the prompt.
+**Hypothesis:** Low = focused & cheap; high = noisy, dilutes retrieval average.
+
+### Setup
+1. Set `RAG_TOP_K=1` in `.env`
+2. Run the same 3 questions (Q1–Q3) — no re-ingest needed
+3. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 1 | ___ | ___ | ___ | ___ | ___ |
+| 3 | ___ | ___ | ___ | ___ | ___ |
+| 5 | ___ | ___ | ___ | ___ | ___ |
+| 10 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+top_k=1 collapses if the top chunk is wrong; top_k=10 buys recall but introduces irrelevant chunks that the LLM may quote anyway, lowering faithfulness. Pair high top_k with a reranker (Lab 7).
+
+### 🫏 Donkey takeaway
+Carrying one pocket is fast but if it's the wrong pocket the delivery fails; carrying ten pockets means the donkey is rummaging through stuff it doesn't need.
+
+---
+
+## Lab 4: Temperature Sweep — "How creative should the donkey be?"
+
+**Config:** `LLM_TEMPERATURE` (default: `0.3`)
+**What it controls:** Sampling randomness for the LLM.
+**Hypothesis:** 0.0 = deterministic & faithful; higher = more hallucination.
+
+### Setup
+1. Set `LLM_TEMPERATURE=0.0` in `.env`
+2. Run the same 3 questions (Q1–Q3)
+3. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 0.0 | ___ | ___ | ___ | ___ | ___ |
+| 0.3 | ___ | ___ | ___ | ___ | ___ |
+| 0.7 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+For RAG/QA, low temperature is almost always correct — you want the donkey to read the delivery note, not invent. Reserve >0.5 for brainstorming or creative agents.
+
+### 🫏 Donkey takeaway
+Cold donkey reads the delivery note word-for-word; warm donkey starts adding side notes that were never in the parcel.
+
+---
+
+## Lab 5: System Prompt Sweep — "Strict vs lax delivery note"
+
+**Config:** `SYSTEM_PROMPT` (default: balanced)
+**What it controls:** The instructions prepended to every LLM call.
+**Hypothesis:** Strict ("ONLY use context, otherwise say I don't know") prevents hallucination; lax allows world knowledge to leak in.
+
+### Setup
+1. Set `SYSTEM_PROMPT` in `.env` to the strict variant (see `src/llm/base.py`)
+2. Run the same 3 questions (Q1–Q3)
+3. Repeat for the lax variant
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| strict | ___ | ___ | ___ | ___ | ___ |
+| balanced (default) | ___ | ___ | ___ | ___ | ___ |
+| lax | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+The single biggest quality lever in RAG. A strict "answer only from context" prompt can lift faithfulness 20+ points overnight, at the cost of more "I don't know" responses (which is actually good — calibrated honesty).
+
+### 🫏 Donkey takeaway
+A delivery note saying "deliver only what's in the backpack" stops the donkey from adding extras from memory; a vague note lets it freestyle.
+
+---
+
+## Lab 6: Embedding Model Sweep — "Smaller vs bigger GPS coordinates"
+
+**Config:** `EMBEDDING_MODEL` (default: `nomic-embed-text` 768d locally)
+**What it controls:** The model that maps text → vector. Different models produce different dimensions and quality.
+**Hypothesis:** Bigger = higher retrieval quality + cost; **requires re-ingest + new index** because dimensions differ.
+
+### Setup
+1. Set `EMBEDDING_MODEL=all-MiniLM-L6-v2` (384d) in `.env`
+2. Drop and re-ingest: `poetry run python -m src.ingestion.run --reset`
+3. Run the same 3 questions (Q1–Q3)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| MiniLM (384d) | ___ | ___ | ___ | ___ | ___ |
+| nomic-embed (768d) | ___ | ___ | ___ | ___ | ___ |
+| Titan v2 (1024d) | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Bigger embedding dims usually retrieve better but are slower to embed and search, and the index must be rebuilt — this is a deploy-day decision, not a runtime knob. Always re-evaluate on the same golden set.
+
+### 🫏 Donkey takeaway
+A high-resolution GPS pins each parcel exactly; a low-resolution GPS lumps similar parcels at the same junction and the donkey fetches the wrong one.
+
+---
+
+## Lab 7: Reranker On/Off — "Second-pass quality check"
+
+**Config:** `RERANKER_ENABLED` + `RERANKER_MODEL` (default: `false`)
+**What it controls:** Whether top_k×3 retrieved chunks are re-scored by a cross-encoder before stuffing.
+**Hypothesis:** +10–20% retrieval quality, +200–500ms latency.
+
+### Setup
+1. Set `RERANKER_ENABLED=false` in `.env`
+2. Run the same 3 questions (Q1–Q3)
+3. Set `RERANKER_ENABLED=true` and `RERANKER_MODEL=BAAI/bge-reranker-base`, repeat
+4. (Optional) Try `RERANKER_MODEL=cohere-rerank-english-v3`
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| off | ___ | ___ | ___ | ___ | ___ |
+| bge-reranker-base | ___ | ___ | ___ | ___ | ___ |
+| cohere-rerank-v3 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Reranking is the cheapest big win after the system prompt — pull more candidates from the GPS warehouse, then have a smarter (slower) model pick the best 5. Costs latency, gains precision.
+
+### 🫏 Donkey takeaway
+After grabbing 15 pockets at the warehouse, a quality inspector re-checks the labels and keeps only the 5 the donkey actually needs.
+
+---
+
+## Lab 8: Hybrid Search On/Off — "GPS plus keyword radio"
+
+**Config:** `HYBRID_SEARCH_ENABLED` + `HYBRID_ALPHA` (default: `false`, alpha `0.5`)
+**What it controls:** Combine vector similarity with keyword (BM25) matching. Alpha = vector weight.
+**Hypothesis:** Wins for queries with rare terms (names, IDs, error codes) that semantic search blurs over.
+
+### Setup
+1. Set `HYBRID_SEARCH_ENABLED=false` in `.env`
+2. Run the same 3 questions (Q1–Q3) plus a "rare term" probe like "What is `DONKEY_SYSTEM_PROMPT`?"
+3. Enable hybrid and sweep alpha
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| off | ___ | ___ | ___ | ___ | ___ |
+| alpha=0.3 | ___ | ___ | ___ | ___ | ___ |
+| alpha=0.5 | ___ | ___ | ___ | ___ | ___ |
+| alpha=0.7 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Pure vector search loses identifiers and code symbols; pure keyword loses paraphrases. Hybrid with alpha=0.5–0.7 is usually best for technical docs.
+
+### 🫏 Donkey takeaway
+The donkey uses GPS to get to the right neighbourhood and a keyword radio to find the exact street name — together they beat either alone.
+
+---
+
+## Lab 9: Max Tokens Sweep — "Cargo capacity of the reply"
+
+**Config:** `LLM_MAX_TOKENS` (default: `1024`)
+**What it controls:** Hard cap on output tokens.
+**Hypothesis:** Truncation vs cost — short caps cut answers mid-sentence; long caps inflate spend.
+
+### Setup
+1. Set `LLM_MAX_TOKENS=256` in `.env`
+2. Run the same 3 questions (Q1–Q3) — note any truncated answers
+3. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 256 | ___ | ___ | ___ | ___ | ___ |
+| 1024 | ___ | ___ | ___ | ___ | ___ |
+| 4096 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Output tokens are 4–5× the cost of input tokens — pick the smallest cap that doesn't truncate your worst-case answer.
+
+### 🫏 Donkey takeaway
+A small cargo crate forces the donkey to drop half the parcel; an oversized crate makes every trip expensive even when there's barely anything to carry.
+
+---
+
+## Lab 10: Distance Metric Sweep — "How to measure GPS closeness"
+
+**Config:** `DISTANCE_METRIC` (default: `cosine`)
+**What it controls:** How the vector store scores similarity between query and chunks.
+**Hypothesis:** Cosine usually wins for normalized embeddings; L2 and dot-product can flip ranks subtly.
+
+### Setup
+1. Set `DISTANCE_METRIC=cosine` in `.env`
+2. Re-ingest if your store bakes the metric into the index: `poetry run python -m src.ingestion.run --reset`
+3. Run the same 3 questions (Q1–Q3)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| cosine | ___ | ___ | ___ | ___ | ___ |
+| L2 | ___ | ___ | ___ | ___ | ___ |
+| dot | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+For OpenAI/Titan/nomic embeddings (all L2-normalized at training time), cosine ≈ dot and both beat L2. Always check whether your embedding model is normalized before changing.
+
+### 🫏 Donkey takeaway
+Cosine measures the angle between two GPS coordinates ignoring magnitude — perfect for normalized parcels; L2 also cares about how far away they are, which can mislead.
+
+---
+
+## Lab 11: HNSW M Sweep — "How many stadium signs per junction"
+
+**Config:** `HNSW_M` (default: `16`)
+**What it controls:** Number of bidirectional links per node in the HNSW graph index.
+**Hypothesis:** Higher M = better recall, slower build, more RAM.
+
+### Setup
+1. Set `HNSW_M=8` in `.env`
+2. Re-ingest (HNSW is built at index time): `poetry run python -m src.ingestion.run --reset`
+3. Run the same 3 questions (Q1–Q3)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 8 | ___ | ___ | ___ | ___ | ___ |
+| 16 | ___ | ___ | ___ | ___ | ___ |
+| 32 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+M trades RAM for recall. Defaults of 16 are usually fine; only push higher if recall is the bottleneck and the index fits in memory.
+
+### 🫏 Donkey takeaway
+More stadium signs per junction means the donkey almost always finds the right exit; fewer signs save space but the donkey occasionally takes the wrong road.
+
+---
+
+## Lab 12: HNSW ef_construction Sweep — "Build-time quality of the sign network"
+
+**Config:** `HNSW_EF_CONSTRUCTION` (default: `200`)
+**What it controls:** How exhaustively the index is built — wider search during construction = better neighbours per node.
+**Hypothesis:** Higher = better index quality, much slower ingestion.
+
+### Setup
+1. Set `HNSW_EF_CONSTRUCTION=100` in `.env`
+2. Re-ingest and time it: `time poetry run python -m src.ingestion.run --reset`
+3. Run the same 3 questions (Q1–Q3)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 100 | ___ | ___ | ___ | ___ | ___ |
+| 200 | ___ | ___ | ___ | ___ | ___ |
+| 400 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+A one-time build cost paid for permanent query-time recall — usually worth pushing higher than the default if you re-index rarely.
+
+### 🫏 Donkey takeaway
+Spending an extra hour at the post office putting up better signs means every future donkey trip is faster and more reliable.
+
+---
+
+## Lab 13: HNSW ef_search Sweep — "How many signs to check at query time"
+
+**Config:** `HNSW_EF_SEARCH` (default: `64`)
+**What it controls:** Width of the candidate list explored during a query.
+**Hypothesis:** Higher = better recall, slower queries — the run-time recall/latency dial.
+
+### Setup
+1. Set `HNSW_EF_SEARCH=32` in `.env`
+2. Run the same 3 questions (Q1–Q3) — no re-ingest needed
+3. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 32 | ___ | ___ | ___ | ___ | ___ |
+| 64 | ___ | ___ | ___ | ___ | ___ |
+| 128 | ___ | ___ | ___ | ___ | ___ |
+| 256 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+The cleanest dial in HNSW: turn it up for accuracy, down for latency, no rebuild needed. Tune per query SLO.
+
+### 🫏 Donkey takeaway
+Reading more stadium signs at each junction means the donkey is more likely to take the optimal road, but every junction takes longer.
+
+---
+
+## Lab 14: Query Rewriting On/Off — "Rewrite vague delivery notes"
+
+**Config:** `QUERY_REWRITING_ENABLED` (default: `false`)
+**What it controls:** Whether an LLM call rewrites the user query (adding context, expanding pronouns) before vector search.
+**Hypothesis:** Helps vague conversational queries; LLM rewrites to add context before search.
+
+### Setup
+1. Set `QUERY_REWRITING_ENABLED=false` in `.env`
+2. Run the same 3 questions (Q1–Q3) plus a vague one like "and what about its cost?"
+3. Enable and repeat
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| off | ___ | ___ | ___ | ___ | ___ |
+| on | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Pays off for chat where users speak in fragments; wasteful for one-shot well-formed queries. Adds an extra LLM call to every request.
+
+### 🫏 Donkey takeaway
+Before leaving the stable, the donkey rewrites the smudged delivery note into clear handwriting so the warehouse can find the parcel.
+
+---
+
+## Lab 15: Multi-Query Sweep — "Ask the question N different ways"
+
+**Config:** `MULTI_QUERY_COUNT` (default: `1`)
+**What it controls:** Generates N paraphrases of the query, retrieves for each, then unions/dedups.
+**Hypothesis:** More variants = better recall, ~N× embedding cost.
+
+### Setup
+1. Set `MULTI_QUERY_COUNT=1` in `.env`
+2. Run the same 3 questions (Q1–Q3)
+3. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| 1 | ___ | ___ | ___ | ___ | ___ |
+| 3 | ___ | ___ | ___ | ___ | ___ |
+| 5 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Multi-query trades cost for recall; great for low-frequency queries with high stakes (legal, support), wasteful for high-volume cheap ones.
+
+### 🫏 Donkey takeaway
+The donkey sends three different couriers asking the same question in three ways — between them they almost always find the parcel.
+
+---
+
+## Lab 16: Metadata Filtering — "Pre-sort the warehouse aisle"
+
+**Config:** `METADATA_FILTERS` (default: none)
+**What it controls:** Pre-filter chunks by metadata (source repo, date, author) before vector search.
+**Hypothesis:** Massive precision boost when applicable; pre-filters before vector search.
+
+### Setup
+1. Set `METADATA_FILTERS=` (none) in `.env`
+2. Run the same 3 questions (Q1–Q3)
+3. Try `METADATA_FILTERS=source=rag-chatbot` and re-run Q2 (rag-chatbot ingestion question)
+4. Try `METADATA_FILTERS=date>2025-01-01` and re-run
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| none | ___ | ___ | ___ | ___ | ___ |
+| source=rag-chatbot | ___ | ___ | ___ | ___ | ___ |
+| date>2025-01-01 | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+The cheapest precision win when you know which subset is relevant — equivalent to telling the warehouse "only check aisle 3". Useless if your metadata isn't trustworthy.
+
+### 🫏 Donkey takeaway
+The donkey skips the entire warehouse and walks straight to aisle 3 because the delivery note already says "books, not groceries".
+
+---
+
+## Lab 17: Chunk Strategy — "How the post office pre-sorts"
+
+**Config:** `CHUNK_STRATEGY` (default: `fixed`)
+**What it controls:** Algorithm splitting documents — fixed-size, semantic (embedding boundary), sentence, or markdown-aware (heading-based).
+**Hypothesis:** Markdown-aware preserves headings = much better for technical docs.
+
+### Setup
+1. Set `CHUNK_STRATEGY=fixed` in `.env`
+2. Re-ingest: `poetry run python -m src.ingestion.run --reset`
+3. Run the same 3 questions (Q1–Q3)
+4. Repeat for each value below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| fixed | ___ | ___ | ___ | ___ | ___ |
+| sentence | ___ | ___ | ___ | ___ | ___ |
+| semantic | ___ | ___ | ___ | ___ | ___ |
+| markdown-aware | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+For markdown technical docs, heading-aware chunking dominates because headings are natural semantic boundaries. Fixed chunking is fine for prose, terrible for code blocks.
+
+### 🫏 Donkey takeaway
+The post office can pre-sort by weight (fixed), by sentence, by topic, or by chapter heading — sorting by chapter heading is what keeps technical knowledge intact.
+
+---
+
+## Lab 18: Eval Thresholds — "How strict is the report card?"
+
+**Config:** `EVAL_FAITHFULNESS_THRESHOLD` + `EVAL_KEYWORD_OVERLAP_PCT` (default: `0.5` / `0.5`)
+**What it controls:** Pass/fail thresholds in the evaluator. Same answers, different verdicts.
+**Hypothesis:** Strict thresholds expose low-quality answers that lax thresholds wave through; the answers don't change, only the score does.
+
+### Setup
+1. Set `EVAL_FAITHFULNESS_THRESHOLD=0.8` and `EVAL_KEYWORD_OVERLAP_PCT=0.7` in `.env`
+2. Run the same 3 questions (Q1–Q3) and capture the eval report card
+3. Repeat for each preset below
+
+### Results table (fill in as you run)
+| Value | Retrieval | Faithfulness | Latency (ms) | Cost (€) | Notes |
+|---|---|---|---|---|---|
+| strict (0.8/0.7) | ___ | ___ | ___ | ___ | ___ |
+| default (0.5/0.5) | ___ | ___ | ___ | ___ | ___ |
+| lax (0.3/0.3) | ___ | ___ | ___ | ___ | ___ |
+
+### What we learned
+Calibrate the evaluator before trusting it. A lax threshold makes everything look green and is the #1 way teams ship hallucination to prod. Pick thresholds against a human-labelled golden set.
+
+### 🫏 Donkey takeaway
+The report card itself can be lenient or strict — the donkey did the same trip, but a strict teacher fails the delivery for the smallest miss.
