@@ -97,7 +97,7 @@ poetry config virtualenvs.in-project true
 ## Step 3 — Clone the repository
 
 ```bash
-cd ~/maestro/ai-portfolio/repos   # or wherever you keep your projects
+cd ~/projects/ai-portfolio/repos   # or wherever you keep your projects
 git clone <your-repo-url> knowledge-engine
 cd knowledge-engine
 ```
@@ -148,7 +148,7 @@ CHROMA_PORT=8000
 
 # IMPORTANT: path to your ai-portfolio/repos folder
 # The ingestor scans this for .md and .py files
-SOURCE_REPOS_PATH=/home/yourname/maestro/ai-portfolio/repos
+SOURCE_REPOS_PATH=/home/yourname/projects/ai-portfolio/repos
 ```
 
 ### Minimum for AWS
@@ -161,7 +161,7 @@ AWS_PROFILE=personal                          # your personal AWS profile
 DYNAMODB_VECTOR_TABLE=knowledge-engine-dev-vectors
 DYNAMODB_GRAPH_TABLE=knowledge-engine-dev-graph
 AWS_BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
-SOURCE_REPOS_PATH=/home/yourname/maestro/ai-portfolio/repos
+SOURCE_REPOS_PATH=/home/yourname/projects/ai-portfolio/repos
 ```
 
 ### Minimum for Azure
@@ -178,7 +178,7 @@ AZURE_COSMOS_ENDPOINT=https://your-cosmos.documents.azure.com
 AZURE_COSMOS_KEY=your-key
 AZURE_SEARCH_ENDPOINT=https://your-search.search.windows.net
 AZURE_SEARCH_API_KEY=your-key
-SOURCE_REPOS_PATH=/home/yourname/maestro/ai-portfolio/repos
+SOURCE_REPOS_PATH=/home/yourname/projects/ai-portfolio/repos
 ```
 
 ---
@@ -390,13 +390,13 @@ The runner covers all 3 phases (27 experiments):
 
 ## Step 12 — Set up AWS
 
-> ⚠️ **Always use personal AWS account (211132580210)**. Never Odido account. Terraform has a safety guard: `allowed_account_ids = ["211132580210"]`.
+> ⚠️ **Always use personal AWS account (<YOUR_AWS_ACCOUNT_ID>)**. Never work account. Terraform has a safety guard: `allowed_account_ids = ["<YOUR_AWS_ACCOUNT_ID>"]`.
 
 ### 12a. Verify you're on the right account
 
 ```bash
 aws sts get-caller-identity --profile personal
-# "Account": "211132580210"  ← must see this
+# "Account": "<YOUR_AWS_ACCOUNT_ID>"  ← must see this
 ```
 
 ### 12b. Provision infrastructure
@@ -557,7 +557,7 @@ ollama pull nomic-embed-text
 ```bash
 # Verify you're using personal account
 aws sts get-caller-identity --profile personal
-# Must show Account: 211132580210
+# Must show Account: <YOUR_AWS_ACCOUNT_ID>
 ```
 
 ### Answers missing 🫏 donkey analogy

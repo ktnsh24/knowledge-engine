@@ -19,7 +19,7 @@ ollama pull nomic-embed-text
 
 # 2. Clone and configure
 cp .env.example .env
-# Edit .env: set SOURCE_REPOS_PATH=/home/yourname/maestro/ai-portfolio/repos
+# Edit .env: set SOURCE_REPOS_PATH=/home/yourname/projects/ai-portfolio/repos
 
 # 3. Start graph + vector stores
 docker compose up -d neo4j chromadb

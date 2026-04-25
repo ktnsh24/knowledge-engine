@@ -1,7 +1,7 @@
 # Terraform — AWS infrastructure for knowledge-engine
 # Resources: DynamoDB (vectors + graph), S3 (wiki backup), Bedrock (no resource needed — pay per call)
 # Cost: ~€0 idle, ~€0.25-0.50 per 2hr run
-# IMPORTANT: Always use personal AWS account (211132580210), never Odido account
+# IMPORTANT: always use your personal AWS account (set in terraform.tfvars), never a work account
 
 terraform {
   required_version = ">= 1.6"
@@ -13,7 +13,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "knowledge-engine-tfstate-211132580210"
+    bucket = "knowledge-engine-tfstate-<YOUR_AWS_ACCOUNT_ID>"
     key    = "knowledge-engine/terraform.tfstate"
     region = "eu-central-1"
   }
@@ -23,7 +23,7 @@ provider "aws" {
   region = var.aws_region
 
   # Safety: ensure we only ever touch the personal account
-  allowed_account_ids = ["211132580210"]
+  allowed_account_ids = ["<YOUR_AWS_ACCOUNT_ID>"]
 }
 
 variable "aws_region" {
