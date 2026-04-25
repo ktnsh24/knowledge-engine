@@ -210,8 +210,8 @@ Use GraphRAG when at least two of the following are true: corpus has many cross-
 Inside this repo (most of these arrive in batches B/C/D — placeholders today):
 
 - `docs/architecture.md` — the system diagram
-- `docs/ai-engineering/ingestion-pipeline-deep-dive.md` *(coming in batch B)* — stages 1–5 in detail
-- `docs/ai-engineering/graph-extractor-deep-dive.md` *(coming in batch B)* — how the LLM is prompted to emit topics + edges
+- `docs/ai-engineering/ingestion-pipeline-deep-dive.md` — stages 1–5 in detail
+- `docs/ai-engineering/graph-extractor-deep-dive.md` — how the LLM is prompted to emit topics + edges
 - `docs/ai-engineering/chat-engine-deep-dive.md` *(coming in batch C)* — stages 6–9 in detail
 - `docs/ai-engineering/gap-detector-deep-dive.md` *(coming in batch C)* — confidence thresholds and the audit trail
 - `docs/ai-engineering/wiki-generator-deep-dive.md` *(coming in batch C)* — how verified answers become re-ingestable docs
