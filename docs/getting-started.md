@@ -6,6 +6,8 @@
 >
 > **How to verify it's working:** [docs/how-to-verify.md](how-to-verify.md)
 
+🫏 **Donkey lens:** this is the express loading dock — gear already installed, fill the GPS warehouse and paper map in seven commands, send the donkey on its first delivery in under a minute.
+
 ---
 
 ## 30-Second Quick Start (Local — €0)

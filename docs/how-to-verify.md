@@ -6,6 +6,17 @@
 
 ---
 
+## Table of Contents
+
+- [🫏 Donkey Analogy First](#-donkey-analogy-first)
+- [Part 1 — Seeing the Connected Map](#part-1--seeing-the-connected-map)
+- [Part 2 — How the Knowledge Base Grows Over Time](#part-2--how-the-knowledge-base-grows-over-time)
+- [Part 3 — Measuring Knowledge Growth Numerically](#part-3--measuring-knowledge-growth-numerically)
+- [Part 4 — Verify After Each Phase](#part-4--verify-after-each-phase)
+- [Summary Checklist](#summary-checklist)
+
+---
+
 ## 🫏 Donkey Analogy First
 
 > Think of the knowledge engine as a donkey (🫏) delivering packages. The graph is the road map — the more connected the roads, the faster and more accurately the donkey delivers. You want to *see* the road map growing, not just trust it's happening.
@@ -188,14 +199,14 @@ curl -X POST http://localhost:8200/eval/run | python3 -m json.tool
 
 Track these metrics over time:
 
-| Metric | What it tells you | Growing means... |
-|--------|-------------------|------------------|
-| `avg_retrieval` | Are relevant chunks being found? | More/better indexed docs |
-| `avg_context_recall` | Does the context cover the full answer? | Graph expansion working better |
-| `avg_faithfulness` | Is the LLM sticking to the context? | LLM not hallucinating |
-| `avg_completeness` | Are all aspects of the question answered? | Richer knowledge base |
-| `hallucination_rate_pct` | How often does the LLM make things up? | Lower = knowledge base improving |
-| `overall_pass_rate` | Overall quality gate | Should increase over time |
+| Metric | What it tells you | Growing means... | 🫏 Donkey |
+|--------|-------------------|------------------|-----------|
+| `avg_retrieval` | Are relevant chunks being found? | More/better indexed docs | Did the donkey grab the right backpacks from the GPS warehouse on average? Higher = better-stocked shelves |
+| `avg_context_recall` | Does the context cover the full answer? | Graph expansion working better | Did the donkey + paper map together pull in all the backpacks needed, not just the closest ones? Higher = the map is well-drawn |
+| `avg_faithfulness` | Is the LLM sticking to the context? | LLM not hallucinating | Did the donkey copy from the backpacks instead of inventing? Higher = the donkey is reading the cargo, not making up parcels |
+| `avg_completeness` | Are all aspects of the question answered? | Richer knowledge base | Did the donkey deliver every item on the order, not just the easy ones? Higher = the warehouse has the missing items now |
+| `hallucination_rate_pct` | How often does the LLM make things up? | Lower = knowledge base improving | What fraction of trips had at least one invented parcel? Lower = the donkey trusts the cargo over its own pocket more often |
+| `overall_pass_rate` | Overall quality gate | Should increase over time | The pass mark on the report card across all metrics — climbs as the warehouse and map fill in the obvious gaps |
 
 ### Track improvement in a simple table
 
