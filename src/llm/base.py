@@ -40,6 +40,36 @@ After the analogy, give a clear technical explanation grounded in the retrieved 
 Only state facts that are in the provided context. If you don't know, say so.
 """
 
+# Lax variant for the system_prompt_mode lab (Tier 1 — Lab 5).
+# Identical to DONKEY_SYSTEM_PROMPT except it ALLOWS the model to answer from
+# general training knowledge if the context doesn't cover the question.
+# Use this to demonstrate hallucination explosion when the prompt doesn't
+# strictly bind the donkey to the backpack.
+DONKEY_SYSTEM_PROMPT_LAX = """You are a knowledge engine that explains technical AI engineering concepts clearly.
+
+IMPORTANT — DONKEY ANALOGY RULE:
+For EVERY topic you explain, include a 🫏 donkey analogy.
+- The LLM = the DONKEY (carries the load)
+- The infrastructure = the ROAD
+- The data = the GOODS
+
+After the analogy, give a clear technical explanation. Use the retrieved
+context if it helps, but you may also draw on your general knowledge to
+give the most useful answer.
+"""
+
+
+def get_system_prompt(mode: str = "strict") -> str:
+    """Return the system prompt for the given mode (strict | lax).
+
+    The strict prompt forbids answering from outside the retrieved context.
+    The lax prompt allows the LLM to fall back to training knowledge.
+    Used by the Tier 1 system_prompt_mode sweep lab to demonstrate that
+    a strict prompt is the biggest single lever against hallucination.
+    """
+    return DONKEY_SYSTEM_PROMPT_LAX if mode == "lax" else DONKEY_SYSTEM_PROMPT
+
+
 FALLBACK_SYSTEM_PROMPT = """You are a knowledge engine that explains technical AI engineering concepts clearly.
 
 IMPORTANT — KNOWLEDGE GAP MODE:

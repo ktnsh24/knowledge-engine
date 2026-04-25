@@ -77,6 +77,39 @@ class Settings(BaseSettings):
     eval_enabled: bool = True
     eval_golden_questions_path: str = "./scripts/golden-questions.yaml"
 
+    # --- Config-tuning labs (Tier 1–5) ---
+    # Tier 1 — Essential
+    rag_chunk_size: int = 800
+    rag_chunk_overlap: int = 100
+    rag_top_k: int = 5
+    llm_temperature: float = 0.1
+    system_prompt_mode: str = "strict"  # strict | lax
+    embedding_dimensions: int = 1024
+
+    # Tier 2 — Quality
+    reranker_enabled: bool = False
+    reranker_model: str = "bge-reranker-base"
+    hybrid_search_enabled: bool = False
+    hybrid_alpha: float = 0.5
+    llm_max_tokens: int = 2048
+    distance_metric: str = "cosine"
+
+    # Tier 3 — HNSW vector-store tuning
+    hnsw_m: int = 16
+    hnsw_ef_construction: int = 200
+    hnsw_ef_search: int = 64
+
+    # Tier 4 — Retrieval strategy
+    query_rewriting_enabled: bool = False
+    multi_query_count: int = 1
+    metadata_filters: str = ""
+    chunk_strategy: str = "fixed"
+
+    # Tier 5 — Evaluation knobs
+    eval_mode: str = "rule_based"  # rule_based | llm_judge
+    eval_faithfulness_threshold: float = 0.5
+    eval_keyword_overlap_pct: float = 0.5
+
     @property
     def source_repo_list(self) -> list[str]:
         return [r.strip() for r in self.source_repos.split(",")]

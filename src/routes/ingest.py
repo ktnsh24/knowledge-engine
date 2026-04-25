@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from src.ingestion.scanner import scan_repos, chunk_document
 from src.ingestion.graph_extractor import extract_and_store
+from src.config import get_settings
 import structlog
 
 router = APIRouter()
@@ -21,11 +22,19 @@ async def run_ingestion(request: Request, background_tasks: BackgroundTasks):
 
 
 async def _ingest_all(vector_store, graph_store, llm):
+    settings = get_settings()
     files = scan_repos()
-    logger.info("ingestion_started", files=len(files))
+    logger.info("ingestion_started", files=len(files),
+                chunk_size=settings.rag_chunk_size,
+                chunk_overlap=settings.rag_chunk_overlap,
+                chunk_strategy=settings.chunk_strategy)
     total_chunks = 0
     for path in files:
-        chunks = chunk_document(path)
+        chunks = chunk_document(
+            path,
+            chunk_size=settings.rag_chunk_size,
+            overlap=settings.rag_chunk_overlap,
+        )
         if chunks:
             n = await vector_store.upsert(chunks)
             total_chunks += n

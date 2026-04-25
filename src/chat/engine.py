@@ -13,7 +13,12 @@ GraphRAG chat engine — combines vector search + graph traversal + fallback.
   With step 3+4, the donkey marks the broken road AND still delivers — honestly.
 """
 import time
-from src.llm.base import BaseLLM, DONKEY_SYSTEM_PROMPT, FALLBACK_SYSTEM_PROMPT
+from src.llm.base import (
+    BaseLLM,
+    DONKEY_SYSTEM_PROMPT,
+    FALLBACK_SYSTEM_PROMPT,
+    get_system_prompt,
+)
 from src.graphstore.base import BaseGraphStore
 from src.vectorstore.base import BaseVectorStore
 from src.chat.gap_detector import GapDetector
@@ -39,9 +44,10 @@ class ChatEngine:
 
     async def answer(self, request: ChatRequest) -> ChatResponse:
         start = time.monotonic()
+        settings = get_settings()
 
         # Step 1: Vector search — find relevant chunks
-        chunks = await self.vector_store.search(request.question, top_k=5)
+        chunks = await self.vector_store.search(request.question, top_k=settings.rag_top_k)
         chunk_texts = [c.text for c in chunks]
         sources = list({c.source_file for c in chunks})
 
@@ -77,6 +83,7 @@ class ChatEngine:
                 question=request.question,
                 context="",  # no doc context — pure LLM knowledge
                 system_prompt=FALLBACK_SYSTEM_PROMPT,
+                temperature=settings.llm_temperature,
             )
             candidate = await self.candidate_store.save_candidate(
                 question=request.question,
@@ -110,7 +117,8 @@ class ChatEngine:
             answer_text = await self.llm.complete(
                 question=request.question,
                 context=context,
-                system_prompt=DONKEY_SYSTEM_PROMPT,
+                system_prompt=get_system_prompt(settings.system_prompt_mode),
+                temperature=settings.llm_temperature,
             )
 
         latency = int((time.monotonic() - start) * 1000)

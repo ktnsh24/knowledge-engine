@@ -49,8 +49,11 @@ class WikiGenerator:
 
     async def generate_page(self, topic: Topic) -> WikiPage:
         """Generate a single wiki page for a topic."""
+        settings = get_settings()
         # Get relevant chunks from vector store
-        chunks = await self.vector_store.search(topic.name, top_k=8)
+        # Use a wider net for wiki generation than for chat (need more context)
+        wiki_top_k = max(settings.rag_top_k, 8)
+        chunks = await self.vector_store.search(topic.name, top_k=wiki_top_k)
         context = "\n\n---\n\n".join([c.text for c in chunks])
         sources = list({c.source_file for c in chunks})
 

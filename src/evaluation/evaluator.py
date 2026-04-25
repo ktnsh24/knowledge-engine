@@ -59,6 +59,8 @@ from typing import Optional
 
 import structlog
 
+from src.config import get_settings
+
 logger = structlog.get_logger()
 
 
@@ -366,10 +368,17 @@ class KnowledgeEngineEvaluator:
         if context_recall.missed_count > 0:
             notes.append(f"⚠️ CONTEXT RECALL: Missed topics: {context_recall.missed_topics}")
 
-        # 4. Faithfulness — UPGRADED to LLM-as-Judge
-        faithfulness = await self._score_faithfulness_llm(answer, retrieved_chunks)
+        # 4. Faithfulness — eval_mode toggle (Lab 19: LLM-as-judge)
+        #   - "rule_based": cheap keyword overlap (no LLM cost)
+        #   - "llm_judge": ask the LLM itself to score grounding
+        eval_mode = get_settings().eval_mode
+        if eval_mode == "rule_based":
+            context_text = "\n\n".join([getattr(c, "text", "") for c in retrieved_chunks[:5]])
+            faithfulness = self._score_faithfulness_keyword(answer, context_text)
+        else:
+            faithfulness = await self._score_faithfulness_llm(answer, retrieved_chunks)
         if faithfulness.has_hallucination:
-            notes.append(f"⚠️ HALLUCINATION: LLM-as-Judge flagged potential hallucination (score={faithfulness.score:.2f})")
+            notes.append(f"⚠️ HALLUCINATION: {eval_mode} flagged potential hallucination (score={faithfulness.score:.2f})")
 
         # 5. Answer relevance (keyword-based, kept for comparison with rag-chatbot)
         answer_relevance = self._score_answer_relevance(question, answer)
