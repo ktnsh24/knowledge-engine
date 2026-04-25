@@ -65,7 +65,7 @@ class Settings(BaseSettings):
 
     # --- Source Repos ---
     source_repos_path: str = "../"
-    source_repos: str = "rag-chatbot,ai-gateway,ai-agent,ai-multi-agent,mcp-server,ai-engineering-field-guide"
+    source_repos: str = "rag-chatbot,ai-gateway,ai-agent,ai-multi-agent,mcp-server"
     include_patterns: str = "**/*.md,**/*.txt"
     exclude_patterns: str = "**/node_modules/**,**/.venv/**,**/site/**,**/__pycache__/**"
 

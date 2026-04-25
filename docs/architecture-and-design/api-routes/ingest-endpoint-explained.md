@@ -41,7 +41,7 @@ No request body. The route reads its parameters entirely from
 | Setting | Default | Effect |
 |---------|---------|--------|
 | `SOURCE_REPOS_PATH` | `../` | Root path the scanner walks |
-| `SOURCE_REPOS` | `rag-chatbot,ai-gateway,ai-agent,ai-multi-agent,mcp-server,ai-engineering-field-guide` | Comma-list of repo folders under that root |
+| `SOURCE_REPOS` | `rag-chatbot,ai-gateway,ai-agent,ai-multi-agent,mcp-server` | Comma-list of repo folders under that root |
 | `INCLUDE_PATTERNS` / `EXCLUDE_PATTERNS` | `**/*.md,**/*.txt` / node_modules, venv, etc. | File-path globbing |
 | `RAG_CHUNK_SIZE` | 800 | Characters per chunk |
 | `RAG_CHUNK_OVERLAP` | 100 | Character overlap between chunks |

@@ -86,7 +86,7 @@ Default behaviour:
 | Setting | Default value | Effect |
 |---------|---------------|--------|
 | `source_repos_path` | `../` | Treats the parent directory as the workspace root (sibling repos pattern) |
-| `source_repos` | `rag-chatbot,ai-gateway,ai-agent,ai-multi-agent,mcp-server,ai-engineering-field-guide` | Six sibling portfolio repos |
+| `source_repos` | `rag-chatbot,ai-gateway,ai-agent,ai-multi-agent,mcp-server` | Five sibling portfolio repos |
 | `include_patterns` | `**/*.md,**/*.txt` | Markdown and plain text only — no source code |
 | `exclude_patterns` | `**/node_modules/**,**/.venv/**,**/site/**,**/__pycache__/**` | Skip vendored/built artefacts |
 

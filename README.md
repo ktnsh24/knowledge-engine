@@ -164,4 +164,3 @@ knowledge-engine/
 
 - [`rag-chatbot`](../rag-chatbot/) — the original RAG system this ingests
 - [`ai-gateway`](../ai-gateway/) — LLM routing layer (can proxy knowledge-engine LLM calls)
-- [`ai-engineering-field-guide`](../ai-engineering-field-guide/) — docs this ingests
