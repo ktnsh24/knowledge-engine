@@ -1,7 +1,9 @@
 # Hands-On Labs — Phase 1: GraphRAG Foundation
 
 > **Format:** Same structure as rag-chatbot hands-on labs. Each lab has a concept, experiments, record tables, and a "What you learned" section.
+>
 > **API base:** `http://localhost:8200`
+>
 > **UI:** `http://localhost:8501`
 
 ---
