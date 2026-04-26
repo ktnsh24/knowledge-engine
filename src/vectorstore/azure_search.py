@@ -4,7 +4,7 @@ Azure AI Search vector store — Azure provider.
 Uses Azure AI Search (formerly Cognitive Search) with vector search index.
 Embeddings generated via Azure OpenAI text-embedding-3-small.
 
-🫏 Azure AI Search is the donkey's GPS with traffic data — it knows the fastest
+🚚 Azure AI Search is the courier's GPS with traffic data — it knows the fastest
 route to relevant content and can re-rank mid-journey as new docs are added.
 """
 import json

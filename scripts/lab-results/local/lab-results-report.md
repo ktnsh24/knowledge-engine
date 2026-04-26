@@ -78,7 +78,7 @@
 
 ### Lab 1: Vector Search
 
-| Experiment | Question | Retrieval Score | Latency | Has 🫏? |
+| Experiment | Question | Retrieval Score | Latency | Has 🚚? |
 |------------|----------|----------------|---------|---------|
 | 1a | What is RAG and why is it used? | 0.000 | 0ms | ✅ |
 | 1b | Why did AWS Titan embeddings score low and ho | 0.000 | 0ms | ✅ |
@@ -157,14 +157,14 @@
 
 ---
 
-## 🫏 Donkey Analogy Spot-Check
+## 🚚 Courier Analogy Spot-Check
 
-All answers should contain a donkey analogy. Checking Lab 1-3 answers:
+All answers should contain a courier analogy. Checking Lab 1-3 answers:
 
-| Experiment | Contains 🫏? | Analogy Preview |
+| Experiment | Contains 🚚? | Analogy Preview |
 |------------|-------------|----------------|
-| 1a | ✅ | 🫏 [DRY RUN] |
-| 2a | ✅ | 🫏 [DRY RUN] |
+| 1a | ✅ | 🚚 [DRY RUN] |
+| 2a | ✅ | 🚚 [DRY RUN] |
 | 3a | ❌ | — |
 
 ---

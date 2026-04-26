@@ -25,7 +25,7 @@
 - [How candidates and feedback close the loop](#how-candidates-and-feedback-close-the-loop)
 - [Performance notes — what runs in series, what doesn't](#performance-notes--what-runs-in-series-what-doesnt)
 - [DE parallel — orchestrator over fan-out fan-in](#de-parallel--orchestrator-over-fan-out-fan-in)
-- [🫏 Donkey explainer — the dispatcher's office](#-donkey-explainer--the-dispatchers-office)
+- [🚚 Courier explainer — the dispatcher's office](#-courier-explainer--the-dispatchers-office)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -94,11 +94,11 @@ sources = list({c.source_file for c in chunks})
 labs index](../hands-on-labs/how-to-read-the-labs.md)). Fewer = focused & cheap;
 more = noisier and dilutes the average retrieval score.
 
-| Field | Where it goes | 🫏 Donkey |
+| Field | Where it goes | 🚚 Courier |
 |-------|---------------|-----------|
-| `chunks[i].text` | Joined later as the LLM context block | The pages the donkey actually loads into the backpack for the trip |
-| `chunks[i].source_file` | Returned to the caller as `sources` | The shelf labels the donkey shows the supervisor so they can audit the quote |
-| `chunks[i].topic_ids` | Used in step 2 to seed graph expansion | The town stamps on each page that tell the donkey which neighbours to ask the cartographer about |
+| `chunks[i].text` | Joined later as the LLM context block | The pages the courier actually loads into the parcel for the trip |
+| `chunks[i].source_file` | Returned to the caller as `sources` | The shelf labels the courier shows the supervisor so they can audit the quote |
+| `chunks[i].topic_ids` | Used in step 2 to seed graph expansion | The town stamps on each page that tell the courier which neighbours to ask the cartographer about |
 | `chunks[0].embedding[0]` | Used (loosely) as `top_score` for the gap detector | The clarity score on the brightest GPS coordinate the warehouse returned |
 
 > ⚠️ The `top_score` heuristic uses `chunks[0].embedding[0]` — the first dimension
@@ -166,14 +166,14 @@ and is documented in the [Gap Detector deep dive](gap-detector-deep-dive.md).
 The `if gap.confidence == ConfidenceLevel.GAP:` branch is the one that makes
 this engine different from a plain RAG chain.
 
-| Branch | System prompt | Context passed | Side effect | 🫏 Donkey |
+| Branch | System prompt | Context passed | Side effect | 🚚 Courier |
 |--------|---------------|----------------|-------------|-----------|
-| `HIGH` | `get_system_prompt(settings.system_prompt_mode)` (strict by default) | Joined chunks + related-topics header | None — pure read | The donkey writes from the loaded backpack and signs the delivery note normally |
-| `PARTIAL` | Same as HIGH but with an extra `[NOTE: Coverage for this question is partial...]` line appended to the context | Joined chunks + related-topics + the partial-coverage notice | Gap saved to `wiki/gaps/unanswered.md` with 🟡 label | The donkey writes from a half-empty backpack and is told to be explicit about what it does and doesn't know |
-| `GAP` | `FALLBACK_SYSTEM_PROMPT` — forces a `⚠️ This answer is from LLM training knowledge` banner | Empty string (`context=""`) | Gap saved with 🔴 label AND candidate saved to `wiki/candidates/pending-review.md` | The donkey stamps the parcel with a warning, delivers it from memory, and leaves a copy on the supervisor's clipboard for promotion or rejection |
+| `HIGH` | `get_system_prompt(settings.system_prompt_mode)` (strict by default) | Joined chunks + related-topics header | None — pure read | The courier writes from the loaded parcel and signs the shipping manifest normally |
+| `PARTIAL` | Same as HIGH but with an extra `[NOTE: Coverage for this question is partial...]` line appended to the context | Joined chunks + related-topics + the partial-coverage notice | Gap saved to `wiki/gaps/unanswered.md` with 🟡 label | The courier writes from a half-empty parcel and is told to be explicit about what it does and doesn't know |
+| `GAP` | `FALLBACK_SYSTEM_PROMPT` — forces a `⚠️ This answer is from LLM training knowledge` banner | Empty string (`context=""`) | Gap saved with 🔴 label AND candidate saved to `wiki/candidates/pending-review.md` | The courier stamps the parcel with a warning, delivers it from memory, and leaves a copy on the supervisor's clipboard for promotion or rejection |
 
 `temperature=settings.llm_temperature` is passed through every call (default
-0.1 — the lower it is, the more reproducible the donkey's handwriting).
+0.1 — the lower it is, the more reproducible the courier's handwriting).
 
 ---
 
@@ -198,11 +198,11 @@ context = "\n\n---\n\n".join(chunk_texts) + topic_context + gap_notice
 
 Three things to notice:
 
-| Detail | Why it matters | 🫏 Donkey |
+| Detail | Why it matters | 🚚 Courier |
 |--------|---------------|-----------|
-| `\n\n---\n\n` between chunks | Markdown horizontal rule; keeps the LLM from blending chunks into one stream and losing `source_file` provenance | A divider page between each delivery doc so the donkey doesn't smear two parcels' contents into one note |
-| Graph topics appended as a header, not interleaved | The LLM treats them as hint metadata rather than as quotable content — fewer hallucinations of "the docs say X about Y" when Y came from the graph | A separate sticky note on the backpack listing neighbour towns to mention; not pages it can quote verbatim |
-| Partial-coverage notice goes at the end of context, not in the system prompt | Per-request flag — the system prompt stays the same across requests so caching and eval comparisons stay valid | A trip-specific warning slip clipped onto today's backpack only, not a permanent change to the desk rules |
+| `\n\n---\n\n` between chunks | Markdown horizontal rule; keeps the LLM from blending chunks into one stream and losing `source_file` provenance | A divider page between each delivery doc so the courier doesn't smear two parcels' contents into one note |
+| Graph topics appended as a header, not interleaved | The LLM treats them as hint metadata rather than as quotable content — fewer hallucinations of "the docs say X about Y" when Y came from the graph | A separate sticky note on the parcel listing neighbour towns to mention; not pages it can quote verbatim |
+| Partial-coverage notice goes at the end of context, not in the system prompt | Per-request flag — the system prompt stays the same across requests so caching and eval comparisons stay valid | A trip-specific warning slip clipped onto today's parcel only, not a permanent change to the desk rules |
 
 ---
 
@@ -211,20 +211,20 @@ Three things to notice:
 `ChatResponse` (defined in [`src/models.py`](../../src/models.py)) carries
 everything the UI and the evaluator need:
 
-| Field | Source | 🫏 Donkey |
+| Field | Source | 🚚 Courier |
 |-------|--------|-----------|
-| `answer` | LLM `complete()` output | The delivery note the donkey hands over to the supervisor |
-| `donkey_analogy` | Extracted via `_extract_donkey()` from the answer | The 🫏 line the donkey is contractually required to write at the end of every note |
-| `sources` | De-duplicated `source_file` list from chunks | The shelf labels of every page the donkey actually carried — provenance for the audit |
+| `answer` | LLM `complete()` output | The shipping manifest the courier hands over to the supervisor |
+| `courier_analogy` | Extracted via `_extract_courier()` from the answer | The 🚚 line the courier is contractually required to write at the end of every note |
+| `sources` | De-duplicated `source_file` list from chunks | The shelf labels of every page the courier actually carried — provenance for the audit |
 | `topics` | Names from `connected_topics` | The neighbour towns the cartographer flagged as relevant |
 | `retrieval_score` | `top_score` heuristic from step 1 | The brightness of the warehouse's best GPS hit; fed into the gap detector |
 | `confidence` / `is_gap` / `gap_id` / `gap_reason` / `gap_suggestion` | From the `KnowledgeGap` returned by the detector | The honesty stamp — green/yellow/red plus the supervisor's instructions for closing the gap |
-| `answer_source` | `DOCS` / `DOCS_PARTIAL` / `LLM_KNOWLEDGE` | A label saying whether the donkey wrote from the backpack, from a half-empty backpack, or from memory |
+| `answer_source` | `DOCS` / `DOCS_PARTIAL` / `LLM_KNOWLEDGE` | A label saying whether the courier wrote from the parcel, from a half-empty parcel, or from memory |
 | `candidate_id` | Set only on `GAP` answers | The clipboard ticket number for the off-road note that needs human review |
-| `latency_ms` | `int((time.monotonic() - start) * 1000)` | The trip duration on the donkey's tachograph for this single delivery |
-| `provider` | `get_settings().cloud_provider.value` | Which stable handled the trip — local barn, AWS depot, or Azure hub |
+| `latency_ms` | `int((time.monotonic() - start) * 1000)` | The trip duration on the courier's tachograph for this single delivery |
+| `provider` | `get_settings().cloud_provider.value` | Which depot handled the trip — local barn, AWS depot, or Azure hub |
 
-`_extract_donkey()` is a small helper that finds the first `🫏` line in the
+`_extract_courier()` is a small helper that finds the first `🚚` line in the
 answer and returns it as a separate field, so the UI can render it as a callout
 even if the LLM buried it mid-paragraph.
 
@@ -238,7 +238,7 @@ The `GAP` branch ends with:
 candidate = await self.candidate_store.save_candidate(
     question=request.question,
     answer=answer_text,
-    donkey_analogy=_extract_donkey(answer_text),
+    courier_analogy=_extract_courier(answer_text),
     gap_id=gap.id,
 )
 candidate_id = candidate.id
@@ -290,9 +290,9 @@ a one-shot DAG.
 
 ---
 
-## 🫏 Donkey explainer — the dispatcher's office
+## 🚚 Courier explainer — the dispatcher's office
 
-The chat engine is the dispatcher who briefs the donkey before every trip.
+The chat engine is the dispatcher who briefs the courier before every trip.
 First the dispatcher walks to the GPS warehouse and pulls the five most
 relevant pages off the shelves matching the customer's question. Then the
 dispatcher walks to the paper map on the wall, looks at the town stamps on
@@ -300,15 +300,15 @@ those pages, and traces two hops in every direction to find neighbour towns
 worth mentioning. Then the auditor (gap detector) eyeballs the haul and stamps
 it green, yellow, or red.
 
-On a green stamp the dispatcher hands the donkey the backpack of pages, the
+On a green stamp the dispatcher hands the courier the parcel of pages, the
 sticky note of neighbour towns, and the strict desk rules — write only what is
 in there. On a yellow stamp the same briefing happens but with an extra slip
 that says "be honest about what you don't know from these pages." On a red
-stamp the dispatcher takes the empty backpack away, hands the donkey the
+stamp the dispatcher takes the empty parcel away, hands the courier the
 fallback rules — "you may write from memory, but stamp the parcel with a
 warning" — and drops a copy of the result on the supervisor's clipboard for
 promotion or rejection. Every trip is logged with timing, stamp colour, and
-backpack contents so tomorrow's report card has something to score.
+parcel contents so tomorrow's report card has something to score.
 
 ---
 

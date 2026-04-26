@@ -289,15 +289,15 @@ You should get a response like:
 
 ```json
 {
-  "answer": "GraphRAG combines vector search with graph traversal... 🫏 Think of it like a donkey...",
-  "donkey_analogy": "The LLM is the donkey. The graph is the road...",
+  "answer": "GraphRAG combines vector search with graph traversal... 🚚 Think of it like a courier...",
+  "courier_analogy": "The LLM is the courier. The graph is the road...",
   "sources": ["rag-chatbot/docs/architecture.md", "knowledge-engine/docs/architecture.md"],
   "topics": ["GraphRAG", "Vector Search", "Graph Database"],
   "latency_ms": 843
 }
 ```
 
-> ⚠️ Every answer includes a `donkey_analogy`. This is by design — it's baked into the system prompt. If you don't see 🫏, something is wrong with the LLM call.
+> ⚠️ Every answer includes a `courier_analogy`. This is by design — it's baked into the system prompt. If you don't see 🚚, something is wrong with the LLM call.
 
 ### Give feedback on the answer
 
@@ -498,7 +498,7 @@ terraform destroy
 | `GET` | `/health` | Health check — shows provider, chunk count, topic count |
 | `POST` | `/ingest/run` | Trigger doc ingestion (background task) |
 | `GET` | `/ingest/status` | Ingestion progress — chunks and topics so far |
-| `POST` | `/chat/` | Ask a question — returns answer + donkey analogy + sources + topics |
+| `POST` | `/chat/` | Ask a question — returns answer + courier analogy + sources + topics |
 | `POST` | `/feedback/` | Submit 👍/👎 feedback on an answer |
 | `GET` | `/wiki/topics` | List all topics in the knowledge graph |
 | `GET` | `/wiki/graph` | Full knowledge graph (topics + relationships as JSON) |
@@ -560,9 +560,9 @@ aws sts get-caller-identity --profile personal
 # Must show Account: <YOUR_AWS_ACCOUNT_ID>
 ```
 
-### Answers missing 🫏 donkey analogy
+### Answers missing 🚚 courier analogy
 
-The donkey analogy is in `src/llm/base.py` → `DONKEY_SYSTEM_PROMPT`. Every LLM call includes it. If missing:
+The courier analogy is in `src/llm/base.py` → `COURIER_SYSTEM_PROMPT`. Every LLM call includes it. If missing:
 ```bash
 # Check which LLM provider is active
 curl http://localhost:8200/health

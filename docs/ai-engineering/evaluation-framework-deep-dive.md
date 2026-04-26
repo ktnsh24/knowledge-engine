@@ -22,7 +22,7 @@
 - [Running an evaluation end-to-end](#running-an-evaluation-end-to-end)
 - [Where results are saved](#where-results-are-saved)
 - [Integration with `routes/eval.py`](#integration-with-routesevalpy)
-- [🫏 Donkey explainer — the road inspector with nine clipboards](#-donkey-explainer--the-road-inspector-with-nine-clipboards)
+- [🚚 Courier explainer — the road inspector with nine clipboards](#-courier-explainer--the-road-inspector-with-nine-clipboards)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -200,10 +200,10 @@ async def run_evaluation(chat_engine, evaluator, n_questions=None) -> EvalSummar
     return summary
 ```
 
-| Step | Notes | 🫏 Donkey |
+| Step | Notes | 🚚 Courier |
 |------|-------|-----------|
 | Load golden questions | Path: `scripts/golden-questions.yaml`; format documented in the [Feedback Loop deep dive](feedback-loop-deep-dive.md) — 👎 entries are appended here automatically | The auditor pulls today's standard test deliveries off the binder before opening the loading dock |
-| Per-question chat call | Uses the live `ChatEngine.answer()` — same code path as production | The donkey actually drives each test delivery; the auditor times it and grades the receipt |
+| Per-question chat call | Uses the live `ChatEngine.answer()` — same code path as production | The courier actually drives each test delivery; the auditor times it and grades the receipt |
 | Per-question evaluation | Currently `retrieved_chunks=[]` because the chat response does not yet expose its raw chunks; retrieval scores fall back to defaults | One clipboard column is blank today — TODO to wire chunks through the response so the auditor can score them |
 | Build summary | Averages each metric across all questions; computes `pass_rate`, `hallucination_rate`, `total_cost_usd` | The auditor totals every clipboard at the end of the day for the daily summary |
 | Save JSON | `scripts/eval-results/eval-{provider}-{timestamp}.json` | The signed report card filed in the cabinet, dated and stable so two runs can be compared |
@@ -262,20 +262,20 @@ doc.
 
 ---
 
-## 🫏 Donkey explainer — the road inspector with nine clipboards
+## 🚚 Courier explainer — the road inspector with nine clipboards
 
 The evaluator is the road inspector with nine clipboards. Every standard test
-delivery from the auditor's binder gets driven by a real donkey, and each
+delivery from the auditor's binder gets driven by a real courier, and each
 clipboard records one thing: how relevant the GPS hits were, how much of the
-backpack was actually useful, how many expected towns were missed, whether the
-delivery note invented anything not in the backpack, whether the answer
+parcel was actually useful, how many expected towns were missed, whether the
+shipping manifest invented anything not in the parcel, whether the answer
 addressed the customer's actual question, whether the answer matches the
 known-good reference, whether every sub-question was covered, whether the
 neighbour towns from the cartographer earned their place on the page, and how
-many cargo-units the donkey burned through. Seven of the nine clipboards fold
+many fuel units the courier burned through. Seven of the nine clipboards fold
 into a single grade between zero and one; pass at 0.65 or above. The clipboards
 themselves are kept on file with a timestamp so tomorrow's inspector can hold
-yesterday's report up alongside today's and see whether the donkey is getting
+yesterday's report up alongside today's and see whether the courier is getting
 faster or slower, more honest or less honest, cheaper or more expensive.
 
 ---

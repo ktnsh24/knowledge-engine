@@ -28,7 +28,7 @@ Concretely, in this repo:
 - **Plain RAG** would answer "How does Titan normalisation affect retrieval?" by retrieving the 5 chunks most similar to that sentence. If the fix is documented in three different chunks (one in `evaluation-framework.md`, one in `aws-services.md`, one in a lab result), and only one of them ranks in the top 5, you get a partial answer.
 - **GraphRAG** retrieves the 5 chunks AND walks the graph from the entity `Titan Embeddings` along the edges `IMPROVES → Retrieval Score` and `USES → Cosine Similarity` to surface the other two chunks even if they didn't rank top 5 by pure semantic similarity.
 
-🫏 **Donkey lens:** plain RAG hands the donkey GPS coordinates to find the closest backpacks; GraphRAG also gives a paper map of which towns connect, so the donkey grabs nearby-by-distance AND nearby-by-relationship.
+🚚 **Courier lens:** plain RAG hands the courier GPS coordinates to find the closest parcels; GraphRAG also gives a paper map of which towns connect, so the courier grabs nearby-by-distance AND nearby-by-relationship.
 
 ---
 
@@ -43,7 +43,7 @@ Both stores answer different questions:
 
 Run them together and the weaknesses cancel. Vector search finds relevant *text*; graph traversal finds relevant *neighbours of that text's entities*. The LLM gets both.
 
-🫏 **Donkey lens:** the GPS warehouse finds the closest backpacks and the paper map shows which towns are related — a good delivery uses both.
+🚚 **Courier lens:** the GPS warehouse finds the closest parcels and the paper map shows which towns are related — a good delivery uses both.
 
 ---
 
@@ -93,7 +93,7 @@ Both nodes and edges can carry extra metadata. In this repo:
 - Relationship edges carry `evidence` (the source sentence).
 - Vector chunks carry `source_path`, `chunk_index`, and a vector embedding (lives in the *vector* store, not the graph store, but they are joined by the topic name).
 
-🫏 **Donkey lens:** nodes are towns, edges are roads with road-signs (`USES`, `IMPROVES`...), properties are the small print on the signpost ("road built from sentence X in `architecture.md`").
+🚚 **Courier lens:** nodes are towns, edges are roads with road-signs (`USES`, `IMPROVES`...), properties are the small print on the signpost ("road built from sentence X in `architecture.md`").
 
 ---
 
@@ -146,7 +146,7 @@ Two things to notice:
 1. **Both stores are written in the same ingestion run.** They never go out of sync because they're both fed from the same chunk.
 2. **Retrieval is a join.** The vector store finds chunks; the graph store extends those chunks with neighbour topics. Neither store could do this alone.
 
-🫏 **Donkey lens:** the post office (ingestion) reads every letter, files the contents in the GPS warehouse, and updates the town map at the same time. When the donkey is dispatched, it consults both before leaving the stable.
+🚚 **Courier lens:** the post office (ingestion) reads every letter, files the contents in the GPS warehouse, and updates the town map at the same time. When the courier is dispatched, it consults both before leaving the depot.
 
 ---
 
@@ -160,7 +160,7 @@ The same three interfaces ship in three flavours. Switching is one env var: `CLO
 | Graph store | Neo4j Community (`graphstore/neo4j_store.py`) | DynamoDB adjacency list (`dynamodb_graph.py`) | Cosmos DB NoSQL (`cosmos_graph.py`) |
 | LLM + embeddings | Ollama llama3.2 + nomic-embed-text (`llm/ollama.py`) | Bedrock Claude Haiku + Titan v2 (`llm/bedrock.py`) | Azure OpenAI GPT-4o-mini + text-embedding-3-small (`llm/azure_openai.py`) |
 | Run cost (per lab session ~50 queries) | €0 | ~€0.25 | ~€0.50 |
-| 🫏 Donkey | The home barn — local llama, ChromaDB shelf, Neo4j map, no bills | The AWS depot — Claude writer, DynamoDB shelf AND DynamoDB adjacency-list map sharing one warehouse | The Azure hub — GPT-4o-mini writer, AI Search shelf, Cosmos DB map, free-tier postcode |
+| 🚚 Courier | The home barn — local llama, ChromaDB shelf, Neo4j map, no bills | The AWS depot — Claude writer, DynamoDB shelf AND DynamoDB adjacency-list map sharing one warehouse | The Azure hub — GPT-4o-mini writer, AI Search shelf, Cosmos DB map, free-tier postcode |
 
 **Why no managed graph DB on AWS?** Neptune Serverless costs €0.50–0.70/hr just to exist. For a portfolio repo we model the graph as DynamoDB partition rows (`PK = "TOPIC#<id>"`, `SK = "REL#<target_id>"`) and traverse with `Query` calls. Same data model, fraction of the cost. See `src/graphstore/dynamodb_graph.py`.
 
@@ -172,14 +172,14 @@ The same three interfaces ship in three flavours. Switching is one env var: `CLO
 
 The pieces unique to this repo (above and beyond the rag-chatbot pipeline). Every entry maps to a file under `src/`.
 
-| Component | File | What it does | 🫏 Donkey |
+| Component | File | What it does | 🚚 Courier |
 | --- | --- | --- | --- |
 | Scanner | `src/ingestion/scanner.py` | Walks `SOURCE_REPOS_PATH`, yields markdown / python files, splits them into chunks | The post-office sorter — opens every envelope, cuts long letters into uniform pages before they hit the warehouse |
-| Graph extractor | `src/ingestion/graph_extractor.py` | Calls the LLM on each chunk to pull out topics + typed relationships, then writes them to the graph store | The town-cartographer — reads each delivery note and pencils the towns and roads onto the official paper map |
-| Vector store | `src/vectorstore/base.py` + providers | Stores chunk embeddings, returns top-k by cosine similarity | The GPS warehouse with stadium signs — every backpack on a numbered shelf, retrieved by GPS proximity |
+| Graph extractor | `src/ingestion/graph_extractor.py` | Calls the LLM on each chunk to pull out topics + typed relationships, then writes them to the graph store | The town-cartographer — reads each shipping manifest and pencils the towns and roads onto the official paper map |
+| Vector store | `src/vectorstore/base.py` + providers | Stores chunk embeddings, returns top-k by cosine similarity | The GPS warehouse with stadium signs — every parcel on a numbered shelf, retrieved by GPS proximity |
 | Graph store | `src/graphstore/base.py` + providers | Stores topics + relationships, returns 1–2 hop neighbours | The wall-sized paper map — knows which town leads to which, regardless of GPS distance |
-| Chat engine | `src/chat/engine.py` | Orchestrates: vector search → graph expand → gap check → LLM answer | The dispatcher — gives the donkey the GPS shortlist plus the map neighbours, then signs the delivery note |
-| Gap detector | `src/chat/gap_detector.py` | Buckets retrieval score into HIGH / PARTIAL / GAP and writes unanswered questions to `wiki/gaps/` | The honest auditor — flags trips where the donkey couldn't find a real road, so you don't mistake invented routes for real ones |
+| Chat engine | `src/chat/engine.py` | Orchestrates: vector search → graph expand → gap check → LLM answer | The dispatcher — gives the courier the GPS shortlist plus the map neighbours, then signs the shipping manifest |
+| Gap detector | `src/chat/gap_detector.py` | Buckets retrieval score into HIGH / PARTIAL / GAP and writes unanswered questions to `wiki/gaps/` | The honest auditor — flags trips where the courier couldn't find a real road, so you don't mistake invented routes for real ones |
 | Candidate store | `src/chat/candidate_store.py` | When confidence = GAP, the LLM still answers from training data; that answer is parked here for human review | The shortlist clipboard — invented routes wait here for the supervisor's 👍 before they're pencilled onto the official map |
 | Wiki generator | `src/wiki/generator.py` | Reads verified Q&A and writes a tourist brochure (`.md`) per topic, ready to be re-ingested | The brochure-writer — turns approved trip reports into a visitor's guide for each town |
 | Feedback loop | `src/chat/feedback.py` | 👍 → verified-answers.md ; 👎 → golden-questions.yaml ; closes the self-improving loop | The trip-debrief desk — good trips get framed on the wall, bad trips get added to next month's training run |
@@ -201,7 +201,7 @@ GraphRAG adds two real costs: an extra LLM call per chunk during ingestion (to e
 
 Use GraphRAG when at least two of the following are true: corpus has many cross-references, users ask multi-hop questions ("how does X compare to Y given Z?"), the same entity appears in many docs under different phrasings, or you want auditable explanations ("the answer mentions X because the graph connects X to Y via `IMPROVES`, evidence: …").
 
-🫏 **Donkey lens:** if your village has one road and three houses you don't need a paper map — it only pays off once you have multiple villages with shared roads.
+🚚 **Courier lens:** if your village has one road and three houses you don't need a paper map — it only pays off once you have multiple villages with shared roads.
 
 ---
 

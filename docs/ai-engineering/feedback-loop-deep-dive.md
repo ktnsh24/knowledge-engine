@@ -23,7 +23,7 @@
 - [Where the data lands and why those formats](#where-the-data-lands-and-why-those-formats)
 - [How the loop actually closes](#how-the-loop-actually-closes)
 - [Rough metrics worth tracking](#rough-metrics-worth-tracking)
-- [🫏 Donkey explainer — the trip-debrief desk](#-donkey-explainer--the-trip-debrief-desk)
+- [🚚 Courier explainer — the trip-debrief desk](#-courier-explainer--the-trip-debrief-desk)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -42,7 +42,7 @@ turns three live signals into permanent improvements:
 3. **Promote on a candidate** (the LLM's off-doc answer to a `GAP` question) →
    same `verified-answers.md` write, same next-ingest pickup.
 
-Without these three writes, gaps stay open forever and the donkey never learns
+Without these three writes, gaps stay open forever and the courier never learns
 which roads actually need building.
 
 ---
@@ -110,7 +110,7 @@ the fallback branch (see the [Chat Engine deep dive](chat-engine-deep-dive.md#st
 candidate = await self.candidate_store.save_candidate(
     question=request.question,
     answer=answer_text,
-    donkey_analogy=_extract_donkey(answer_text),
+    courier_analogy=_extract_courier(answer_text),
     gap_id=gap.id,
 )
 ```
@@ -119,8 +119,8 @@ candidate = await self.candidate_store.save_candidate(
 
 | File | Format | Purpose |
 |------|--------|---------|
-| `candidates.jsonl` | One JSON line per `WikiCandidate` (`id`, `question`, `answer`, `donkey_analogy`, `gap_id`, `status`, timestamps) | Machine-readable; what `list_candidates`, `summary`, and `_find` read |
-| `pending-review.md` | Markdown section per candidate with the `🔵 CANDIDATE {id}` heading, the question, the answer, the donkey analogy, and explicit `promote` / `discard` URLs | Human review surface — open the file in a markdown viewer, decide, click |
+| `candidates.jsonl` | One JSON line per `WikiCandidate` (`id`, `question`, `answer`, `courier_analogy`, `gap_id`, `status`, timestamps) | Machine-readable; what `list_candidates`, `summary`, and `_find` read |
+| `pending-review.md` | Markdown section per candidate with the `🔵 CANDIDATE {id}` heading, the question, the answer, the courier analogy, and explicit `promote` / `discard` URLs | Human review surface — open the file in a markdown viewer, decide, click |
 
 Three terminal states:
 
@@ -153,7 +153,7 @@ scripts/
 
 Two formats, two reasons:
 
-| Format | Why used | 🫏 Donkey |
+| Format | Why used | 🚚 Courier |
 |--------|----------|-----------|
 | Markdown for `verified-answers.md`, `pending-review.md`, `unanswered.md` | The ingestion scanner already chunks markdown — using markdown means the next ingest indexes them with zero special-case code | The supervisor's wall posters and the ingestion clerk both read the same handwriting; no translation needed |
 | JSONL for `raw-feedback.jsonl`, `candidates.jsonl`, `gaps.jsonl` | Append-friendly, one record per line, easy to stream-update without parsing the whole file (used by `_update_status` to flip a single row) | The auditor's filing cabinet — easy to drop a new card on the pile without rewriting the whole drawer |
@@ -204,7 +204,7 @@ promoted, the evaluator records the metric improvement.
 These are not implemented as dashboards yet; they are the things you would
 watch if you wired one up. All three derive from files this module writes.
 
-| Metric | Computed from | Why it matters | 🫏 Donkey |
+| Metric | Computed from | Why it matters | 🚚 Courier |
 |--------|---------------|---------------|-----------|
 | Gap-resolution rate | `gap_summary()`'s `resolved / total` over time | Are users actually closing gaps, or just letting them pile up? | Are red flags being taken off the wall faster than new ones go up? |
 | Candidate-promotion ratio | `summary()` from `CandidateStore` — `promoted / (promoted + discarded)` | High = LLM training knowledge was usually right; low = tighten the strict prompt or lower the GAP threshold | What fraction of off-road inventions does the supervisor approve as actual roads? |
@@ -212,29 +212,29 @@ watch if you wired one up. All three derive from files this module writes.
 
 ---
 
-## 🫏 Donkey explainer — the trip-debrief desk
+## 🚚 Courier explainer — the trip-debrief desk
 
-The feedback loop is the trip-debrief desk in the corner of the stable. After
-every delivery the supervisor can give the donkey a 👍 or a 👎. A 👍 means
-"frame this delivery note and pin it to the wall" — the framed note goes into
+The feedback loop is the trip-debrief desk in the corner of the depot. After
+every delivery the supervisor can give the courier a 👍 or a 👎. A 👍 means
+"frame this shipping manifest and pin it to the wall" — the framed note goes into
 the verified-answers drawer of the wiki cabinet, and on the next pre-sort the
 ingestion clerk re-files it alongside the original delivery docs so the next
-donkey starts with it in the backpack. A 👎 means "this delivery was wrong
-even though the donkey thought it was right" — the question goes onto next
+courier starts with it in the parcel. A 👎 means "this delivery was wrong
+even though the courier thought it was right" — the question goes onto next
 month's training-run sheet so the auditor has to re-grade it after every
 change.
 
 The candidate desk is a parallel stand for the off-road trips. When the
-auditor red-stamps a delivery, the donkey is allowed to write something from
+auditor red-stamps a delivery, the courier is allowed to write something from
 memory but the note is clipped onto the supervisor's clipboard with a 🔵
 sticker. The supervisor reviews each clipped note, promotes the good ones
 (they get framed in the same wall-poster drawer the 👍 trips go into), and
-discards the bad ones (the red flag stays up on the wall and the next donkey
+discards the bad ones (the red flag stays up on the wall and the next courier
 inherits the same gap).
 
 Both desks empty into the same drawer. That single shared drawer is what
 makes the whole system get smarter — every approved trip, no matter which desk
-it came from, is in the backpack the next donkey loads.
+it came from, is in the parcel the next courier loads.
 
 ---
 

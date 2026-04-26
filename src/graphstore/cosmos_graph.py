@@ -5,8 +5,8 @@ Uses Cosmos DB NoSQL API with adjacency list pattern.
 Two containers: 'topics' and 'edges' — same pattern as DynamoDB graph store.
 No Gremlin/Graph API needed (saves cost and complexity).
 
-🫏 Cosmos DB is the donkey's cross-border road map — it works globally,
-auto-scales, and the donkey never gets stuck at a traffic jam.
+🚚 Cosmos DB is the courier's cross-border road map — it works globally,
+auto-scales, and the courier never gets stuck at a traffic jam.
 """
 import asyncio
 from azure.cosmos.aio import CosmosClient

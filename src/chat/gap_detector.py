@@ -1,11 +1,11 @@
 """
 Gap detector — marks where the road is missing.
 
-When the donkey can't find a good route (low retrieval scores), it marks the broken road
+When the courier can't find a good route (low retrieval scores), it marks the broken road
 on the map so you know where to build. Without this, you'd never know which questions
 are silently being answered from the LLM's training data instead of your docs.
 
-🫏 The gap detector is the donkey's honest confession:
+🚚 The gap detector is the courier's honest confession:
    "I tried my best, but the road ends here. Here's where you need to build more."
 
 Three confidence levels:

@@ -10,7 +10,7 @@ from src.models import ChatRequest, DocumentChunk, Topic
 def mock_llm():
     llm = AsyncMock()
     llm.complete.return_value = (
-        "🫏 The LLM is the donkey carrying your question.\n\n"
+        "🚚 The LLM is the courier carrying your question.\n\n"
         "GraphRAG combines vector search with graph traversal for richer answers."
     )
     return llm
@@ -57,10 +57,10 @@ def test_chat_engine_returns_response(chat_engine):
     assert isinstance(response.sources, list)
 
 
-def test_chat_engine_extracts_donkey_analogy(chat_engine):
+def test_chat_engine_extracts_courier_analogy(chat_engine):
     request = ChatRequest(question="Explain embeddings")
     response = asyncio.run(chat_engine.answer(request))
-    assert "🫏" in response.donkey_analogy
+    assert "🚚" in response.courier_analogy
 
 
 def test_chat_engine_calls_vector_store(chat_engine, mock_vector_store):

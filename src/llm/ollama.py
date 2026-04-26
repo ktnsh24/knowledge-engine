@@ -1,7 +1,7 @@
 """Ollama LLM — local provider, free, no internet required."""
 import json
 import httpx
-from src.llm.base import BaseLLM, DONKEY_SYSTEM_PROMPT
+from src.llm.base import BaseLLM, COURIER_SYSTEM_PROMPT
 from src.config import get_settings
 
 
@@ -13,7 +13,7 @@ class OllamaLLM(BaseLLM):
         self.model = settings.ollama_llm_model
 
     async def complete(self, question: str, context: str,
-                       system_prompt: str = DONKEY_SYSTEM_PROMPT,
+                       system_prompt: str = COURIER_SYSTEM_PROMPT,
                        temperature: float = 0.1) -> str:
         prompt = f"{system_prompt}\n\n---CONTEXT---\n{context}\n\n---QUESTION---\n{question}"
         async with httpx.AsyncClient(timeout=120) as client:
@@ -47,7 +47,7 @@ TEXT:
         prompt = f"""Write a wiki page for the topic: "{topic_name}"
 
 Use the context below. Include:
-1. 🫏 Donkey analogy (required)
+1. 🚚 Courier analogy (required)
 2. What it is (definition)
 3. How it works (technical)
 4. Why it matters (real-world scenario)
@@ -56,7 +56,7 @@ Use the context below. Include:
 CONTEXT:
 {context[:4000]}"""
         content = await self.complete(prompt, context)
-        donkey_start = content.find("🫏")
-        donkey_end = content.find("\n", donkey_start + 1) if donkey_start != -1 else -1
-        donkey = content[donkey_start:donkey_end].strip() if donkey_start != -1 else ""
-        return {"content": content, "donkey_analogy": donkey}
+        courier_start = content.find("🚚")
+        courier_end = content.find("\n", courier_start + 1) if courier_start != -1 else -1
+        courier = content[courier_start:courier_end].strip() if courier_start != -1 else ""
+        return {"content": content, "courier_analogy": courier}

@@ -14,13 +14,13 @@
 - [Internal flow](#internal-flow)
 - [`curl` example](#curl-example)
 - [Error cases](#error-cases)
-- [🫏 Donkey explainer — the inspector's bell](#-donkey-explainer--the-inspectors-bell)
+- [🚚 Courier explainer — the inspector's bell](#-courier-explainer--the-inspectors-bell)
 
 ---
 
 ## Endpoint summary
 
-| Method | Path | Auth | Purpose | 🫏 Donkey |
+| Method | Path | Auth | Purpose | 🚚 Courier |
 |--------|------|------|---------|-----------|
 | POST | `/eval/run` | none | Run every question in the golden dataset through the live chat engine and grade the answers across the nine documented metrics; return the summary inline AND save a JSON file under `scripts/eval-results/` | Pull the inspector's bell — the road inspector drives every standard test delivery and fills in the nine clipboards, then files the report card in the cabinet |
 
@@ -75,14 +75,14 @@ No request body. Runtime knobs come from `src/config.py`:
 }
 ```
 
-| Field | Source | 🫏 Donkey |
+| Field | Source | 🚚 Courier |
 |-------|--------|-----------|
 | `pass_rate` | `EvalSummary.pass_rate` — `passed / total` | Fraction of test deliveries that scored 0.65 or above on the inspector's overall grade |
 | `passed` / `total` | counts from the run | Tally of green-stamp deliveries vs total deliveries driven |
-| `provider` | `settings.cloud_provider.value` | Which stable's donkey took the test deliveries today — local barn, AWS depot, or Azure hub |
+| `provider` | `settings.cloud_provider.value` | Which depot's courier took the test deliveries today — local barn, AWS depot, or Azure hub |
 | `metrics.*` | Averages of the per-metric scores; full meanings in the [Evaluation Framework deep dive](../../ai-engineering/evaluation-framework-deep-dive.md#the-nine-metrics-in-detail) | Daily totals of each clipboard column the inspector keeps |
 | `avg_latency_ms` | Average of per-question latency timed by `run_evaluation` | Average trip duration on the tachograph across all test deliveries |
-| `comparison_with_rag_chatbot` | `EvalSummary.compare_with_rag_chatbot()` | Side-by-side card showing which clipboard columns existed in the previous stable and which are new this stable |
+| `comparison_with_rag_chatbot` | `EvalSummary.compare_with_rag_chatbot()` | Side-by-side card showing which clipboard columns existed in the previous depot and which are new this depot |
 | `results[]` | `EvaluationResult.to_dict()` per question | One graded receipt per test delivery, including answer preview, every score, and any flagged claims |
 
 The same payload is also persisted as
@@ -151,7 +151,7 @@ EVAL_MODE=llm_judge  curl -X POST 'http://localhost:8200/eval/run' | jq '.pass_r
 
 ## Error cases
 
-| Trigger | Response | 🫏 Donkey |
+| Trigger | Response | 🚚 Courier |
 |---------|----------|-----------|
 | `golden-questions.yaml` is missing or empty | `200` with all zero counters (`EvalSummary()` default) | Inspector showed up but the test-delivery binder was empty; report card is blank |
 | Chat engine throws on a single question | The exception bubbles up — the route does not catch per-question failures today | One bad test delivery halts the whole inspection; fix is to wrap the per-question loop in `try/except` and append a failure result |
@@ -161,17 +161,17 @@ EVAL_MODE=llm_judge  curl -X POST 'http://localhost:8200/eval/run' | jq '.pass_r
 
 ---
 
-## 🫏 Donkey explainer — the inspector's bell
+## 🚚 Courier explainer — the inspector's bell
 
-The eval bell is the only door in the stable that triggers a full exam. When
+The eval bell is the only door in the depot that triggers a full exam. When
 you ring it, the road inspector pulls the standard test-deliveries binder off
-the shelf, then for each entry asks the live donkey to actually drive that
+the shelf, then for each entry asks the live courier to actually drive that
 delivery — same dispatcher, same warehouse, same paper map as a normal
 customer trip. The inspector grades each delivery across nine clipboards
-(retrieval clarity, backpack relevance, missed towns, honesty about the
-backpack, on-topic answer, match against the known-good reference, all
-sub-questions covered, neighbour-town usefulness, and cargo-units burned)
+(retrieval clarity, parcel relevance, missed towns, honesty about the
+parcel, on-topic answer, match against the known-good reference, all
+sub-questions covered, neighbour-town usefulness, and fuel units burned)
 and rolls them into one overall grade per delivery. At the end of the round
 the inspector files a dated report card in the cabinet under
 `scripts/eval-results/` and shouts the totals back through the door so the
-caller can decide whether to ship the new donkey or send it back for retraining.
+caller can decide whether to ship the new courier or send it back for retraining.

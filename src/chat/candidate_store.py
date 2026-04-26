@@ -12,7 +12,7 @@ You review it:
               → gap closes itself over time
   👎 Discard  → question stays open in gaps, candidate removed
 
-🫏 The candidate store is the donkey's notebook:
+🚚 The candidate store is the courier's notebook:
    "I couldn't find a road for this trip, so I made one up.
    Check if my route is correct before I draw it on the official map."
 """
@@ -40,14 +40,14 @@ class CandidateStore:
         self.verified_answers_path = Path(settings.wiki_output_path) / "feedback" / "verified-answers.md"
         self.verified_answers_path.parent.mkdir(parents=True, exist_ok=True)
 
-    async def save_candidate(self, question: str, answer: str, donkey_analogy: str,
+    async def save_candidate(self, question: str, answer: str, courier_analogy: str,
                               gap_id: str) -> WikiCandidate:
         """Save an LLM-generated answer as a pending candidate."""
         candidate = WikiCandidate(
             id=str(uuid.uuid4())[:8],
             question=question,
             answer=answer,
-            donkey_analogy=donkey_analogy,
+            courier_analogy=courier_analogy,
             gap_id=gap_id,
         )
 
@@ -67,7 +67,7 @@ class CandidateStore:
 **Answer:**
 {candidate.answer}
 
-**Donkey Analogy:** {candidate.donkey_analogy}
+**Courier Analogy:** {candidate.courier_analogy}
 
 **Gap ID:** `{candidate.gap_id}` | **Status:** `{candidate.status}`
 

@@ -4,8 +4,8 @@ DynamoDB vector store — AWS provider.
 Stores embeddings as serialized floats in DynamoDB items.
 Uses cosine similarity computed in Python (no OpenSearch needed = €0 cost).
 
-🫏 DynamoDB is a saddlebag — not as fast as a dedicated vector DB,
-but the donkey can carry it without renting a truck.
+🚚 DynamoDB is a parcel — not as fast as a dedicated vector DB,
+but the courier can carry it without renting a truck.
 For our scale (<100K chunks), Python cosine search is fast enough.
 """
 import json

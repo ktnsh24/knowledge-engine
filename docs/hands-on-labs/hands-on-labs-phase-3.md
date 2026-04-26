@@ -7,7 +7,7 @@
 
 ## Table of Contents
 
-- [🫏 Phase 3 Metric Overview](#phase-3-metrics)
+- [🚚 Phase 3 Metric Overview](#phase-3-metrics)
 - [Lab 9: Feedback Loops — "How does the system get smarter?"](#lab-9-feedback-loops)
 - [Lab 10: Graph Traversal Quality — "Did the knowledge graph actually help?"](#lab-10-graph-traversal-quality)
 - [Lab 11: Multi-Provider Comparison — "Local vs AWS vs Azure"](#lab-11-multi-provider)
@@ -16,15 +16,15 @@
 
 ---
 
-## 🫏 Phase 3 Metric Overview {#phase-3-metrics}
+## 🚚 Phase 3 Metric Overview {#phase-3-metrics}
 
-| Metric | Donkey Version | What It Measures |
+| Metric | Courier Version | What It Measures |
 |--------|---------------|-----------------|
-| **Feedback conversion rate** | % of deliveries where the customer said "perfect!" (👍). The higher it is, the better the donkey's route planning is. | thumbs_up / total_feedback |
-| **Eval set growth rate** | Every 👎 adds a new test case. How fast is the donkey's training set growing? | new golden questions / week |
-| **Graph traversal quality** | Did the road map (graph) actually help the donkey find a shorter route? Or did it just add noise? | topics_cited_in_answer / topics_added_by_graph |
-| **Cross-provider pass rate delta** | Does the donkey perform equally on Dutch roads (local) vs German autobahn (AWS) vs French toll roads (Azure)? | pass_rate_aws - pass_rate_local |
-| **CI/CD eval gate pass rate** | The road inspector automatically blocks new donkeys from starting if the road quality drops below 70%. | % of CI runs that passed the eval gate |
+| **Feedback conversion rate** | % of deliveries where the customer said "perfect!" (👍). The higher it is, the better the courier's route planning is. | thumbs_up / total_feedback |
+| **Eval set growth rate** | Every 👎 adds a new test case. How fast is the courier's training set growing? | new golden questions / week |
+| **Graph traversal quality** | Did the road map (graph) actually help the courier find a shorter route? Or did it just add noise? | topics_cited_in_answer / topics_added_by_graph |
+| **Cross-provider pass rate delta** | Does the courier perform equally on Dutch roads (local) vs German autobahn (AWS) vs French toll roads (Azure)? | pass_rate_aws - pass_rate_local |
+| **CI/CD eval gate pass rate** | The road inspector automatically blocks new couriers from starting if the road quality drops below 70%. | % of CI runs that passed the eval gate |
 
 ---
 
@@ -59,7 +59,7 @@ Ask a question, then submit feedback via API:
 # Step 1: Ask question
 RESPONSE=$(curl -s -X POST http://localhost:8200/chat/ \
   -H "Content-Type: application/json" \
-  -d '{"question": "What is the donkey analogy in this project?"}')
+  -d '{"question": "What is the courier analogy in this project?"}')
 
 echo $RESPONSE | python3 -m json.tool
 
@@ -67,8 +67,8 @@ echo $RESPONSE | python3 -m json.tool
 curl -X POST http://localhost:8200/feedback/ \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "What is the donkey analogy in this project?",
-    "answer": "The LLM is the donkey...",
+    "question": "What is the courier analogy in this project?",
+    "answer": "The LLM is the courier...",
     "thumbs_up": true,
     "session_id": "lab-session-1"
   }'
@@ -127,7 +127,7 @@ curl -X POST http://localhost:8200/eval/run -d '{"n_questions": null}'
 | Total golden questions | 11 | ___ |
 | `pass_rate` | ___ | ___ |
 
-> 🫏 The feedback question will likely fail on first run (the system made a mistake on it).
+> 🚚 The feedback question will likely fail on first run (the system made a mistake on it).
 > That's CORRECT — it should fail. This is how the eval set catches regressions:
 > next time you fix the system, this question must pass before you can deploy.
 
@@ -216,8 +216,8 @@ curl -X POST http://localhost:8200/eval/run -d '{"n_questions": 5}'
 **Time:** 30 minutes (assumes you've run Terraform for at least one cloud provider)
 **Metric focus:** all metrics, cross-provider delta
 
-> 🫏 This is the 3-way donkey race. Same road (your docs), same packages (golden questions),
-> three different donkeys (Ollama, Bedrock, GPT-4o-mini). Who delivers best?
+> 🚚 This is the 3-way courier race. Same road (your docs), same packages (golden questions),
+> three different couriers (Ollama, Bedrock, GPT-4o-mini). Who delivers best?
 > rag-chatbot did this — knowledge-engine goes further with 7 more metrics.
 
 ### Experiment 11a — Local baseline (already have this)

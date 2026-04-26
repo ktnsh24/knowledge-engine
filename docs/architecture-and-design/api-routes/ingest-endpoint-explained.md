@@ -15,13 +15,13 @@
 - [Internal flow](#internal-flow)
 - [`curl` examples](#curl-examples)
 - [Error cases](#error-cases)
-- [🫏 Donkey explainer — the intake desk](#-donkey-explainer--the-intake-desk)
+- [🚚 Courier explainer — the intake desk](#-courier-explainer--the-intake-desk)
 
 ---
 
 ## Endpoint summary
 
-| Method | Path | Auth | Purpose | 🫏 Donkey |
+| Method | Path | Auth | Purpose | 🚚 Courier |
 |--------|------|------|---------|-----------|
 | POST | `/ingest/run` | none | Schedule a background scan of all configured source repos; chunk every markdown file, embed the chunks into the vector store, and extract topics + relationships into the graph store | The intake desk — drop the day's letters; the back room starts pre-sorting in parallel while you walk away |
 | GET | `/ingest/status` | none | Return the current chunk count and topic count from the two stores | A small window to count GPS-shelved parcels and paper-map towns without disturbing the back-room work |
@@ -139,7 +139,7 @@ watch -n 5 'curl -s http://localhost:8200/ingest/status | jq'
 
 ## Error cases
 
-| Trigger | Response | 🫏 Donkey |
+| Trigger | Response | 🚚 Courier |
 |---------|----------|-----------|
 | `SOURCE_REPOS_PATH` does not exist on disk | Background task logs an error per missing repo and returns 0 chunks; the HTTP request still returns `started` | Intake desk accepts the empty mailbag — only the back-room sorter notices there were no letters |
 | `vector_store.upsert` raises (Chroma down, DynamoDB throttling, AI Search throttling) | Logged via `structlog`; partial progress is preserved (each file is upserted independently) | One shelf in the warehouse is locked; remaining files keep landing on the open shelves |
@@ -152,9 +152,9 @@ that guard, add a module-level `asyncio.Lock`.
 
 ---
 
-## 🫏 Donkey explainer — the intake desk
+## 🚚 Courier explainer — the intake desk
 
-The intake desk is the loudest door in the stable. You drop a stack of fresh
+The intake desk is the loudest door in the depot. You drop a stack of fresh
 letters in the basket and walk away — the clerk at the desk does not sort
 them in front of you. Behind the wall, the post office walks the whole pile,
 cuts each letter into pages of 800 characters with a 100-character overlap,

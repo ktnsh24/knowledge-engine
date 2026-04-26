@@ -35,20 +35,20 @@ All three providers implement [`BaseGraphStore`](graphstore-interface-deep-dive.
 | Practical scale | ~1M nodes before tuning | ~100k topics (scan cost) | ~100k topics (scan cost) |
 | When to use | Dev, eval, anything needing multi-hop | AWS-native, hop-1 fan-out is enough | Azure-native, hop-1 fan-out is enough |
 
-- 🫏 **Donkey:** Same road map drawn three different ways — Neo4j as a proper graph, DynamoDB as two "from–to" columns, Cosmos as one document per town and per road.
+- 🚚 **Courier:** Same road map drawn three different ways — Neo4j as a proper graph, DynamoDB as two "from–to" columns, Cosmos as one document per town and per road.
 
 ---
 
 ## Head-to-Head Comparison
 
-| Concern | Neo4j | DynamoDB | Cosmos | 🫏 Donkey |
+| Concern | Neo4j | DynamoDB | Cosmos | 🚚 Courier |
 |---------|-------|----------|--------|-----------|
 | Setup time | `docker compose up -d neo4j` | `terraform apply` (two tables) | `terraform apply` (database + two containers) | The local map-room opens in seconds; AWS and Azure ones need a one-time blueprint |
 | Hop-1 traversal cost | One Cypher query | One scan + N point reads | One SQL query + N point reads | All three work the same for the next-town question; only Neo4j scales gracefully past that |
-| Hop-2+ traversal cost | One Cypher query (Neo4j walks for you) | Hop-1 only — manual fan-out from the application | Hop-1 only — manual fan-out from the application | The donkey can ask "what's two roads away?" only on the Neo4j map; the others need a return trip |
+| Hop-2+ traversal cost | One Cypher query (Neo4j walks for you) | Hop-1 only — manual fan-out from the application | Hop-1 only — manual fan-out from the application | The courier can ask "what's two roads away?" only on the Neo4j map; the others need a return trip |
 | `MERGE` semantics | Native | Emulated via `put_item` overwrite | Emulated via `upsert_item` | All three end up idempotent on the right key, just by different mechanisms |
 | Edge identity | Pattern `(a)-[r:TYPE]->(b)` | Composite `f"{src}#{type}#{tgt}"` partition key | Composite `f"{src}__{type}__{tgt}"` document id | Same triple on the road label; three different ways of writing it on the shelf |
-| Best at | Real graph queries, dev, eval | Cheap AWS deployment with shallow traversal | Cheap Azure deployment with shallow traversal | Pick the workshop that matches how deep the donkey needs to walk |
+| Best at | Real graph queries, dev, eval | Cheap AWS deployment with shallow traversal | Cheap Azure deployment with shallow traversal | Pick the workshop that matches how deep the courier needs to walk |
 
 ---
 
@@ -106,14 +106,14 @@ docker compose up -d neo4j
 # Browser at http://localhost:7474 to inspect the graph
 ```
 
-| Strength | Caveat | 🫏 Donkey |
+| Strength | Caveat | 🚚 Courier |
 |----------|--------|-----------|
 | Real multi-hop traversal | Single container — no replication for free tier | The proper paper map shows every road at every distance; if the workshop floods, you start over |
 | Cypher is purpose-built for graphs | One more skill to learn for a Python team | The cartographer speaks the universal map dialect; new staff need a week to learn it |
 | Free Community Edition | Enterprise features (clustering, RBAC) are paid | The free workshop is one room; bigger workshops cost a licence |
 | `MATCH`-first edge upsert defends against dangling edges | Slightly slower than blind insert | The cartographer refuses to draw a road to a missing town; the check costs a beat |
 
-- 🫏 **Donkey:** The local Neo4j map-room is the donkey's reference workshop — proper graph ink, every road visible, multi-hop traversal in one query.
+- 🚚 **Courier:** The local Neo4j map-room is the courier's reference workshop — proper graph ink, every road visible, multi-hop traversal in one query.
 
 ---
 
@@ -168,13 +168,13 @@ DYNAMODB_GRAPH_TABLE=knowledge-engine-graph
 cd terraform/aws && terraform apply
 ```
 
-| Strength | Caveat | 🫏 Donkey |
+| Strength | Caveat | 🚚 Courier |
 |----------|--------|-----------|
 | €0 idle, cents per active operation | Hop-1 only — multi-hop needs application-side fan-out | The rolled-up adjacency list shows direct neighbours instantly; further-out towns need a follow-up trip |
 | No Neptune licence | Scans don't scale past ~100k topics | The cheap workshop replaces the conveyor belt with hand-walked aisles; brilliant at small scale, slow at warehouse-chain size |
 | Composite `edge_id` makes upsert idempotent | Adding GSIs for traversal would raise storage cost ~30% | The same road label is one row no matter how many times it's re-drawn; aisle indexes would speed lookups but cost shelf space |
 
-- 🫏 **Donkey:** The AWS workshop trades the proper paper map for a stack of "from–to" cards in two filing cabinets. Cheap, idempotent, and good enough for one ring of neighbours per question.
+- 🚚 **Courier:** The AWS workshop trades the proper paper map for a stack of "from–to" cards in two filing cabinets. Cheap, idempotent, and good enough for one ring of neighbours per question.
 
 ---
 
@@ -226,13 +226,13 @@ cd terraform/azure && terraform apply
 # Create the database and the two containers (topics, edges) via the module.
 ```
 
-| Strength | Caveat | 🫏 Donkey |
+| Strength | Caveat | 🚚 Courier |
 |----------|--------|-----------|
 | Cheaper than Gremlin API for this access pattern | Hop-1 only, like the DynamoDB provider | The wall-pinned document-per-town map shows neighbours fast but doesn't reveal the wider road network |
 | Auto-wires containers at first request | Manual schema migration if you change container layouts | The workshop opens its filing cabinets the first time the cartographer arrives; reorganising means closing the workshop |
 | Serverless RU billing — cheap on idle days | RU bills can spike on full-graph dashboards | Pay-per-trip pricing rewards quiet weeks and punishes you for asking "give me the whole map" twice an hour |
 
-- 🫏 **Donkey:** The Azure workshop pins the map as separate documents — one per town, one per road. Hop-1 is fast, hop-2 needs another trip, and the rent is paid by the question.
+- 🚚 **Courier:** The Azure workshop pins the map as separate documents — one per town, one per road. Hop-1 is fast, hop-2 needs another trip, and the rent is paid by the question.
 
 ---
 
@@ -246,13 +246,13 @@ cd terraform/azure && terraform apply
 | Azure deployment, hop-1 traversal sufficient | Cosmos DB NoSQL | Cheapest Azure-native option; matches Azure AI Search story |
 | Azure deployment, multi-hop required | Cosmos DB Gremlin API (would need a new provider) | Native graph queries, but pricier |
 
-| Decision | 🫏 Donkey |
+| Decision | 🚚 Courier |
 |----------|-----------|
-| Neo4j locally, always | The donkey's reference paper map is always within reach for dev and eval |
-| DynamoDB / Cosmos in cloud, hop-1 only | The donkey accepts a shallower map outdoors in exchange for no rent |
-| Multi-hop in production = upgrade required | If the donkey needs to see two roads ahead in cloud, the workshop has to upgrade to a real graph backend |
+| Neo4j locally, always | The courier's reference paper map is always within reach for dev and eval |
+| DynamoDB / Cosmos in cloud, hop-1 only | The courier accepts a shallower map outdoors in exchange for no rent |
+| Multi-hop in production = upgrade required | If the courier needs to see two roads ahead in cloud, the workshop has to upgrade to a real graph backend |
 
-- 🫏 **Donkey:** The contract guarantees the donkey can hang any of three maps on the wall. Pick the one whose ink — proper graph, adjacency rows, or document pages — fits the question shapes the donkey is asked most.
+- 🚚 **Courier:** The contract guarantees the courier can hang any of three maps on the wall. Pick the one whose ink — proper graph, adjacency rows, or document pages — fits the question shapes the courier is asked most.
 
 ---
 

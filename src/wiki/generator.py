@@ -1,7 +1,7 @@
 """
 Wiki generator — reads graph + vector store, generates wiki pages with LLM.
 
-🫏 The wiki generator is the donkey that builds the road itself.
+🚚 The wiki generator is the courier that builds the road itself.
 It reads all the scattered docs (raw materials), extracts topics (bricks),
 finds connections (road layout), then asks the LLM to pave each section.
 The more docs you add, the better the road becomes.
@@ -64,7 +64,7 @@ class WikiGenerator:
         # Ask LLM to generate the page
         result = await self.llm.generate_wiki_page(topic.name, context)
         content = result["content"]
-        donkey = result["donkey_analogy"]
+        courier = result["courier_analogy"]
 
         # Add navigation footer
         if connected_names:
@@ -76,7 +76,7 @@ class WikiGenerator:
             topic_id=topic.id,
             title=topic.name,
             content=content,
-            donkey_analogy=donkey,
+            courier_analogy=courier,
             sources=sources,
             connected_topics=[t.id for t in connected],
         )

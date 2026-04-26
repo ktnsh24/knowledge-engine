@@ -12,7 +12,7 @@
 
 - [Cost Estimation — Local vs Cloud](#cost-estimation)
 - [Setup — Ingest Docs First](#setup)
-- [🫏 The Donkey Analogy — Phase 1 Metrics](#donkey-analogy)
+- [🚚 The Courier Analogy — Phase 1 Metrics](#courier-analogy)
 - [Lab 1: Vector Search — "Did I find the right chunks?"](#lab-1-vector-search)
 - [Lab 2: Graph Traversal — "Did the knowledge graph expand my answer?"](#lab-2-graph-traversal)
 - [Lab 3: GraphRAG Combined — "Is 1+1 > 2?"](#lab-3-graphrag-combined)
@@ -53,14 +53,14 @@ watch -n 5 'curl -s http://localhost:8200/ingest/status'
 
 ---
 
-## 🫏 The Donkey Analogy — Phase 1 Metrics {#donkey-analogy}
+## 🚚 The Courier Analogy — Phase 1 Metrics {#courier-analogy}
 
-| Metric | Donkey Version | What It Really Measures | How It's Calculated |
+| Metric | Courier Version | What It Really Measures | How It's Calculated |
 |--------|---------------|------------------------|---------------------|
-| **retrieval_avg** | The donkey searches the warehouse and picks 5 packages. How good were they? 0.9 = all excellent. 0.2 = mostly wrong shelf. | Average cosine similarity of retrieved chunks to the query. | Sum of chunk scores / chunk count. Min-max normalized so best = 1.0 (fixes Titan low-score issue from rag-chatbot). |
-| **context_precision** | Of the 5 packages the donkey grabbed, how many were actually what the customer ordered? | Fraction of retrieved chunks that are relevant to the question. | Keyword overlap: relevant_chunks / total_chunks. |
-| **context_recall** | **NEW** — The warehouse has 10 relevant shelves. The donkey only visited 6. Recall = 0.6. Precision doesn't catch this — recall does. | Of ALL expected topics, how many actually appeared in what was retrieved? | expected_topics_found / total_expected_topics. Graph expansion helps this score. |
-| **latency_ms** | How long did the donkey take to complete the delivery? Target: < 3000ms local. | Wall-clock time from question to answer. | `time.monotonic()` delta in milliseconds. |
+| **retrieval_avg** | The courier searches the warehouse and picks 5 packages. How good were they? 0.9 = all excellent. 0.2 = mostly wrong shelf. | Average cosine similarity of retrieved chunks to the query. | Sum of chunk scores / chunk count. Min-max normalized so best = 1.0 (fixes Titan low-score issue from rag-chatbot). |
+| **context_precision** | Of the 5 packages the courier grabbed, how many were actually what the customer ordered? | Fraction of retrieved chunks that are relevant to the question. | Keyword overlap: relevant_chunks / total_chunks. |
+| **context_recall** | **NEW** — The warehouse has 10 relevant shelves. The courier only visited 6. Recall = 0.6. Precision doesn't catch this — recall does. | Of ALL expected topics, how many actually appeared in what was retrieved? | expected_topics_found / total_expected_topics. Graph expansion helps this score. |
+| **latency_ms** | How long did the courier take to complete the delivery? Target: < 3000ms local. | Wall-clock time from question to answer. | `time.monotonic()` delta in milliseconds. |
 
 **Phase 1 insight:** Vector search gives precision. Graph traversal gives recall.
 You need both to score well on all metrics — that's why this is GraphRAG, not just RAG.
@@ -103,7 +103,7 @@ curl -X POST http://localhost:8200/chat/ \
 | `context_precision` | ___ |
 | `latency_ms` | ___ |
 | Number of sources returned | ___ |
-| Did the answer contain 🫏? | Yes / No |
+| Did the answer contain 🚚? | Yes / No |
 
 ### Experiment 1b — Specific technical question
 
@@ -139,7 +139,7 @@ curl -X POST http://localhost:8200/chat/ \
 | Did the LLM refuse? | Yes / No | Correct behaviour = "I don't have this in my docs" |
 | Did it hallucinate a recipe? | Yes / No | Incorrect behaviour = hallucination |
 
-> 🫏 If retrieval_avg < 0.3, the donkey couldn't find the right shelf. A good system should say "I don't know" rather than invent an answer.
+> 🚚 If retrieval_avg < 0.3, the courier couldn't find the right shelf. A good system should say "I don't know" rather than invent an answer.
 
 ### What you learned
 
@@ -233,7 +233,7 @@ curl -X POST http://localhost:8200/chat/ \
 | Answer length (approx words) | ___ | ___ | ___ |
 | Topics array length | ___ | 0 | ___ |
 
-> 🫏 Graph ON = the donkey has a full city map. Graph OFF = the donkey only knows its own street.
+> 🚚 Graph ON = the courier has a full city map. Graph OFF = the courier only knows its own street.
 
 ### What you learned
 
@@ -299,7 +299,7 @@ curl -X POST http://localhost:8200/eval/run -d '{"n_questions": 11}'
 | `avg_context_recall` | ___ | ___ | ___ |
 | `pass_rate` | ___ | ___ | ___ |
 
-> 🫏 More docs = better road. The donkey gets smarter every time you add cobblestones.
+> 🚚 More docs = better road. The courier gets smarter every time you add cobblestones.
 
 ### Phase 1 Skills Checklist {#skills-checklist}
 

@@ -2,9 +2,9 @@
 
 > A self-improving GraphRAG knowledge base that ingests your AI portfolio docs and gets smarter every time you use it.
 
-## 🫏 The Donkey Analogy
+## 🚚 The Courier Analogy
 
-The LLM is the donkey — it carries your questions to answers.
+The LLM is the courier — it carries your questions to answers.
 The graph + vector store is the road — if the road is bad (missing docs, broken connections), even the smartest LLM can't deliver.
 **This project builds the road.** The more docs you add, the better the road becomes.
 
@@ -41,7 +41,7 @@ Your Docs (.md files across 6 repos)
                     [LLM]
            Ollama (local) / Bedrock (AWS) / Azure OpenAI
                       ↓
-                [Response + 🫏 Donkey Analogy]
+                [Response + 🚚 Courier Analogy]
                       ↓
                [Feedback Loop]
          👍 → wiki page   👎 → eval set
@@ -109,7 +109,7 @@ curl -X POST http://localhost:8200/chat/ \
 ```
 Ask question → get answer → give feedback
      ↓              ↓            ↓
-   log Q         🫏 analogy    👍 → wiki
+   log Q         🚚 analogy    👍 → wiki
                                👎 → eval set
                                     ↓
                               next ingestion
@@ -127,7 +127,7 @@ knowledge-engine/
 │   ├── ingestion/      # scanner, chunker, graph_extractor
 │   ├── vectorstore/    # chroma, dynamodb, azure_search
 │   ├── graphstore/     # neo4j, dynamodb_graph, cosmos_graph
-│   ├── llm/            # ollama, bedrock, azure_openai (donkey analogy baked in)
+│   ├── llm/            # ollama, bedrock, azure_openai (courier analogy baked in)
 │   ├── chat/           # engine (GraphRAG), feedback
 │   ├── wiki/           # generator, renderer
 │   ├── evaluation/     # evaluator, golden_questions

@@ -38,8 +38,8 @@ rag-chatbot GAPS this module fills:
    → Did graph expansion improve the answer vs vector-only?
    → Unique to knowledge-engine, no equivalent in rag-chatbot
 
-🫏 The Donkey Analogy:
-   Metrics are the road inspector. The donkey (LLM) thinks it's doing great,
+🚚 The Courier Analogy:
+   Metrics are the road inspector. The courier (LLM) thinks it's doing great,
    but the inspector measures potholes objectively. Without the inspector,
    you only know the road is broken when the goods fall off the cart.
    The 7 new metrics = 7 more things the inspector now checks.

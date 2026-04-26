@@ -30,16 +30,16 @@
 
 Vectors and graphs answer different questions. Vectors say "this chunk looks like the question"; graphs say "these concepts are connected to that concept". GraphRAG combines both — see [GraphRAG Concepts](graphrag-concepts.md) — but the storage layers are kept separate so each can scale, fail, and be priced on its own terms.
 
-| Question type | Right tool | Wrong tool | 🫏 Donkey |
+| Question type | Right tool | Wrong tool | 🚚 Courier |
 |---------------|------------|------------|-----------|
-| "Find chunks similar to this question" | Vector store | Graph store | The donkey looks up GPS coordinates on the warehouse shelves, not on the paper map |
-| "Show me concepts 2 hops from `embeddings`" | Graph store | Vector store | The donkey follows roads on the paper map; GPS coordinates don't tell you which towns connect |
+| "Find chunks similar to this question" | Vector store | Graph store | The courier looks up GPS coordinates on the warehouse shelves, not on the paper map |
+| "Show me concepts 2 hops from `embeddings`" | Graph store | Vector store | The courier follows roads on the paper map; GPS coordinates don't tell you which towns connect |
 | "Render the full knowledge map for the UI" | Graph store | Vector store | The cartographer hands over the whole map; the warehouse only knows individual shelves |
 | "Confirm a topic exists by its slug ID" | Graph store | Vector store | The map index lookup is O(1); the warehouse would have to scan every shelf |
 
 `BaseGraphStore` is the contract that lets Neo4j, DynamoDB adjacency lists, or Cosmos DB NoSQL all serve the chat engine and gap detector identically.
 
-- 🫏 **Donkey:** The map-room rules. Any paper-map workshop that follows them can hang on the donkey's wall — Neo4j drawn in proper graph ink, DynamoDB rolled up as adjacency-list rows, Cosmos NoSQL pinned as document pages.
+- 🚚 **Courier:** The map-room rules. Any paper-map workshop that follows them can hang on the courier's wall — Neo4j drawn in proper graph ink, DynamoDB rolled up as adjacency-list rows, Cosmos NoSQL pinned as document pages.
 
 ---
 
@@ -88,7 +88,7 @@ Seven methods — three writes (well, two writes and one count), four reads. No 
 | `get_full_graph` | Read | All nodes + all edges |
 | `topic_count` | Read | Cardinality |
 
-- 🫏 **Donkey:** Seven map-room rules — two for adding (towns and roads), four for asking (one town, neighbouring towns, all towns, all towns + roads), one for counting. Every map-room follows them or the donkey can't read the wall.
+- 🚚 **Courier:** Seven map-room rules — two for adding (towns and roads), four for asking (one town, neighbouring towns, all towns, all towns + roads), one for counting. Every map-room follows them or the courier can't read the wall.
 
 ---
 
@@ -102,13 +102,13 @@ Seven methods — three writes (well, two writes and one count), four reads. No 
 - All non-`id` fields (`name`, `description`, `source_repos`) get overwritten on the second call, so the latest extraction wins.
 - Returns `None`, not the merged `Topic` — callers don't need a confirmation, the operation is fire-and-forget.
 
-| Concern | Implementation note | 🫏 Donkey |
+| Concern | Implementation note | 🚚 Courier |
 |---------|---------------------|-----------|
 | Slug as primary key | `topic.id` is the lookup key everywhere | The town name on the official map is the only identifier — pencilling the same town twice doesn't double-list it |
 | Last-write-wins on description | Neo4j `SET` clause / put_item semantics overwrite | If the cartographer rewrites a town's description, the new one replaces the old |
 | No deletion in the contract | Topics are cheap; manual delete via the provider's admin console if needed | Towns rarely disappear off the map; if one needs erasing, the cartographer does it by hand |
 
-- 🫏 **Donkey:** `upsert_topic` is the cartographer pencilling a town onto the map — first time it appears on a delivery note, the dot lands; later mentions update the town's caption.
+- 🚚 **Courier:** `upsert_topic` is the cartographer pencilling a town onto the map — first time it appears on a shipping manifest, the dot lands; later mentions update the town's caption.
 
 ---
 
@@ -128,7 +128,7 @@ Seven methods — three writes (well, two writes and one count), four reads. No 
 | DynamoDB | Composite `edge_id = f"{source_id}#{relation_type}#{target_id}"` is the partition key |
 | Cosmos | `id = f"{source_id}__{relation_type}__{target_id}"` |
 
-- 🫏 **Donkey:** `upsert_relationship` is the cartographer drawing a road between two towns, with a footnote on the road for the sentence that justified it. Drawing the same road again just refreshes the footnote.
+- 🚚 **Courier:** `upsert_relationship` is the cartographer drawing a road between two towns, with a footnote on the road for the sentence that justified it. Drawing the same road again just refreshes the footnote.
 
 ---
 
@@ -140,7 +140,7 @@ Seven methods — three writes (well, two writes and one count), four reads. No 
 
 This is the cheap point lookup — used by the chat engine's gap detector to confirm whether a topic the LLM mentioned actually exists in the corpus.
 
-- 🫏 **Donkey:** The town index lookup — "is there a town called `embeddings` on the map?" Yes or no, fast.
+- 🚚 **Courier:** The town index lookup — "is there a town called `embeddings` on the map?" Yes or no, fast.
 
 ---
 
@@ -158,7 +158,7 @@ This is the graph-side superpower of GraphRAG. After the vector store finds chun
 - DynamoDB and Cosmos implement **hop-1 only today** (they fetch direct neighbours via the edges table/container and stop). The `max_hops` parameter is accepted for contract compatibility but only affects Neo4j today. This is documented honesty: the cheap providers traded multi-hop traversal for cost.
 - The result is **direction-agnostic**: edges in either direction count as a connection (a topic that *requires* you and one you *require* are both neighbours).
 
-| Provider | Real `max_hops` support | 🫏 Donkey |
+| Provider | Real `max_hops` support | 🚚 Courier |
 |----------|------------------------|-----------|
 | Neo4j | Up to whatever you ask for; 2 is the default | The map-room actually walks the roads — second-hop towns appear too |
 | DynamoDB | Hop-1 only (today) | The map only lists direct neighbours; further-out towns have to be fetched in a follow-up trip |
@@ -166,7 +166,7 @@ This is the graph-side superpower of GraphRAG. After the vector store finds chun
 
 > ⚠️ **The interface promises `max_hops`; only Neo4j honours `> 1` today.** Code paths that depend on multi-hop traversal degrade to hop-1 quality on AWS / Azure. Plan multi-hop fan-out client-side if you need it on those providers, or upgrade to a graph-native backend.
 
-- 🫏 **Donkey:** `get_connected_topics` is the donkey's "what's nearby?" query. On the proper paper map (Neo4j) the donkey sees two roads ahead; on the rolled-up adjacency list (DynamoDB / Cosmos) the donkey only sees the towns directly adjacent.
+- 🚚 **Courier:** `get_connected_topics` is the courier's "what's nearby?" query. On the proper paper map (Neo4j) the courier sees two roads ahead; on the rolled-up adjacency list (DynamoDB / Cosmos) the courier only sees the towns directly adjacent.
 
 ---
 
@@ -183,7 +183,7 @@ These power the wiki UI and the `/wiki/graph` endpoint. `get_full_graph` returns
 
 **Cost note:** both are O(N). On Neo4j they're a single `MATCH (t:Topic)` traversal; on DynamoDB/Cosmos they're a `scan` / `SELECT *`. For corpora in the low thousands of topics — the expected operating point — this is fine. Past ~10k topics, paginate or restrict by `source_repo`.
 
-- 🫏 **Donkey:** "Hand me the whole map" and "list every town" — fine when the map fits on one wall, expensive when it doesn't.
+- 🚚 **Courier:** "Hand me the whole map" and "list every town" — fine when the map fits on one wall, expensive when it doesn't.
 
 ---
 
@@ -193,7 +193,7 @@ These power the wiki UI and the `/wiki/graph` endpoint. `get_full_graph` returns
 
 Used by the `/health` endpoint to report graph size. Cheap on Neo4j (`count(t)`); on DynamoDB and Cosmos it's a `len(get_all_topics())` so the cost grows with the graph.
 
-- 🫏 **Donkey:** "How many towns are on the map?" — the dashboard's heartbeat number.
+- 🚚 **Courier:** "How many towns are on the map?" — the dashboard's heartbeat number.
 
 ---
 
@@ -223,23 +223,23 @@ Same lazy-import pattern, same `local`-by-default behaviour. **Critical:** the *
 | `CLOUD_PROVIDER=aws` | `DynamoDBGraphStore` |
 | `CLOUD_PROVIDER=azure` | `CosmosGraphStore` |
 
-- 🫏 **Donkey:** The yard sign at the gate also picks the map-room. Flip the sign and the donkey gets a new GPS warehouse *and* a new paper map — they always come as a pair.
+- 🚚 **Courier:** The yard sign at the gate also picks the map-room. Flip the sign and the courier gets a new GPS warehouse *and* a new paper map — they always come as a pair.
 
 ---
 
 ## Invariants Every Provider Must Honour
 
-| Invariant | Why | 🫏 Donkey |
+| Invariant | Why | 🚚 Courier |
 |-----------|-----|-----------|
 | `upsert_topic` is idempotent on `topic.id` | Re-ingest must not duplicate towns | The cartographer pencils once and only updates on subsequent visits |
 | `upsert_relationship` is idempotent on `(source, type, target)` | Repeated extraction must not double the road | The road between two towns is drawn once, then footnotes are refreshed |
 | `get_topic(missing_id)` returns `None`, not raises | Caller code stays simple | Looking up a town that doesn't exist returns "no such town" instead of crashing the trip |
-| `get_connected_topics` excludes the start node | Otherwise traversal expansion would loop on the seed | The donkey doesn't list the starting town as one of the neighbours |
+| `get_connected_topics` excludes the start node | Otherwise traversal expansion would loop on the seed | The courier doesn't list the starting town as one of the neighbours |
 | `get_full_graph` returns a `KnowledgeGraph` Pydantic, not provider-native objects | UI and serialisation stay provider-agnostic | The cartographer hands over the map in a standard envelope, regardless of which workshop drew it |
 | Edge direction is preserved | `USED_BY(A,B) ≠ USED_BY(B,A)` semantically | Roads are one-way drawings — the cartographer doesn't conflate them |
-| All methods are async | FastAPI handlers don't block | The map-room never makes the donkey wait at the door |
+| All methods are async | FastAPI handlers don't block | The map-room never makes the courier wait at the door |
 
-- 🫏 **Donkey:** Seven house rules. Honour them and any new map-room can hang on the donkey's wall without changing the chat engine, gap detector, or wiki UI.
+- 🚚 **Courier:** Seven house rules. Honour them and any new map-room can hang on the courier's wall without changing the chat engine, gap detector, or wiki UI.
 
 ---
 

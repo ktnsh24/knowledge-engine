@@ -36,8 +36,8 @@ What it does:
     5. Creates a summary JSON with comparison_with_rag_chatbot section
     6. Prints a final pass/fail table to terminal
 
-🫏 Donkey Analogy:
-    This script is the inspector who follows the donkey on every delivery,
+🚚 Courier Analogy:
+    This script is the inspector who follows the courier on every delivery,
     measures the time, checks the package quality, and writes the full report.
     You don't have to manually fill in tables anymore — the inspector does it.
 """
@@ -85,7 +85,7 @@ class ExperimentResult:
     latency_ms: int = 0
     topics: list = field(default_factory=list)
     sources: list = field(default_factory=list)
-    donkey_analogy: str = ""
+    courier_analogy: str = ""
     passed: bool = False
     error: str = ""
     skipped: bool = False
@@ -141,7 +141,7 @@ class LabAPIClient:
         if self.dry_run:
             return {
                 "answer": f"[DRY RUN] Answer for: {question}",
-                "donkey_analogy": "🫏 [DRY RUN]",
+                "courier_analogy": "🚚 [DRY RUN]",
                 "sources": [], "topics": [], "latency_ms": 0,
                 "provider": "local",
             }
@@ -254,14 +254,14 @@ def _chat_experiment(
         data = client.chat(question)
         result.latency_ms = data.get("latency_ms") or int((time.monotonic() - t0) * 1000)
         result.answer = data.get("answer", "")
-        result.donkey_analogy = data.get("donkey_analogy", "")
+        result.courier_analogy = data.get("courier_analogy", "")
         result.sources = data.get("sources", [])
         result.topics = data.get("topics", [])
         result.scores = {
             "retrieval_score": data.get("retrieval_score", 0.0),
             "provider": data.get("provider", "local"),
         }
-        result.passed = bool(result.answer) and "🫏" in (result.donkey_analogy or result.answer)
+        result.passed = bool(result.answer) and "🚚" in (result.courier_analogy or result.answer)
         print(f" ✓ ({result.latency_ms}ms)")
     except Exception as e:
         result.error = str(e)
@@ -407,7 +407,7 @@ def run_phase_2(client: LabAPIClient) -> list[ExperimentResult]:
 
     results.append(_chat_experiment(client, "8a_long", 2, 8,
         "Cost — long answer prompt",
-        "Explain the entire knowledge-engine architecture in detail including all components, how they interact, the evaluation framework, the cloud deployment options, and the donkey analogy."))
+        "Explain the entire knowledge-engine architecture in detail including all components, how they interact, the evaluation framework, the cloud deployment options, and the courier analogy."))
 
     for r in results:
         _print_result(r)
@@ -429,8 +429,8 @@ def run_phase_3(client: LabAPIClient, output_dir: Path) -> list[ExperimentResult
     print(f"  ▶ [9a] Submitting positive feedback...", flush=True, end="")
     try:
         resp = client.submit_feedback(
-            question="What is the donkey analogy in this project?",
-            answer="The LLM is the donkey carrying your question to an answer.",
+            question="What is the courier analogy in this project?",
+            answer="The LLM is the courier carrying your question to an answer.",
             thumbs_up=True,
         )
         r9a.scores = {"action": resp.get("action", ""), "feedback_type": "positive"}
@@ -591,13 +591,13 @@ def generate_summary_report(
 
 ### Lab 1: Vector Search
 
-| Experiment | Question | Retrieval Score | Latency | Has 🫏? |
+| Experiment | Question | Retrieval Score | Latency | Has 🚚? |
 |------------|----------|----------------|---------|---------|
 """
     for r in all_results:
         if r.id in ("1a", "1b", "1c"):
-            has_donkey = "✅" if r.donkey_analogy or "🫏" in r.answer else "❌"
-            report += f"| {r.id} | {r.question[:45]} | {r.score('retrieval_score'):.3f} | {r.latency_ms}ms | {has_donkey} |\n"
+            has_courier = "✅" if r.courier_analogy or "🚚" in r.answer else "❌"
+            report += f"| {r.id} | {r.question[:45]} | {r.score('retrieval_score'):.3f} | {r.latency_ms}ms | {has_courier} |\n"
 
     report += """
 ### Lab 2: Graph Traversal
@@ -717,17 +717,17 @@ def generate_summary_report(
 
 ---
 
-## 🫏 Donkey Analogy Spot-Check
+## 🚚 Courier Analogy Spot-Check
 
-All answers should contain a donkey analogy. Checking Lab 1-3 answers:
+All answers should contain a courier analogy. Checking Lab 1-3 answers:
 
-| Experiment | Contains 🫏? | Analogy Preview |
+| Experiment | Contains 🚚? | Analogy Preview |
 |------------|-------------|----------------|
 """
     for r in all_results:
         if r.id in ("1a", "2a", "3a"):
-            has = "✅" if r.donkey_analogy or "🫏" in r.answer else "❌"
-            preview = (r.donkey_analogy or "—")[:80]
+            has = "✅" if r.courier_analogy or "🚚" in r.answer else "❌"
+            preview = (r.courier_analogy or "—")[:80]
             report += f"| {r.id} | {has} | {preview} |\n"
 
     report += f"""

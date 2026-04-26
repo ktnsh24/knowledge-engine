@@ -30,13 +30,13 @@ The vector store is built for "find chunks that look like this question". The gr
 
 The graph extractor is the cartographer who reads every envelope as it goes through pre-sort and pencils the relationships onto the paper map. It runs once at ingest time so chat-time queries can be cheap graph traversals instead of fresh LLM calls.
 
-| Question vectors handle well | Question the graph handles well | 🫏 Donkey |
+| Question vectors handle well | Question the graph handles well | 🚚 Courier |
 |------------------------------|--------------------------------|-----------|
-| "Show me chunks about embeddings" | "What concepts are 2 hops from embeddings?" | The GPS warehouse finds the right shelf; the paper map finds the connecting roads to neighbouring towns the donkey didn't even ask about |
+| "Show me chunks about embeddings" | "What concepts are 2 hops from embeddings?" | The GPS warehouse finds the right shelf; the paper map finds the connecting roads to neighbouring towns the courier didn't even ask about |
 | "What does the docs say about chunking?" | "Which topics depend on chunking?" | The warehouse pulls envelopes mentioning chunking; the map shows which towns have a `REQUIRED_BY` road into it |
 | "Find similar passages" | "Which two topics share the same evidence sentence?" | The warehouse ranks envelopes by GPS proximity; the map links towns by the footnoted road that justifies the connection |
 
-- 🫏 **Donkey:** The cartographer at pre-sort is what turns "the donkey can find chunks" into "the donkey can also follow the roads between concepts". One extra LLM call per chunk at ingest time saves dozens of LLM calls per question at chat time.
+- 🚚 **Courier:** The cartographer at pre-sort is what turns "the courier can find chunks" into "the courier can also follow the roads between concepts". One extra LLM call per chunk at ingest time saves dozens of LLM calls per question at chat time.
 
 ---
 
@@ -82,14 +82,14 @@ async def extract_and_store(text, graph_store, llm) -> dict:
 
 That's the entire orchestration. Every provider boils down to "call the LLM, parse JSON, return the dict". The intelligence lives in the prompt.
 
-| Concern | Where it lives | 🫏 Donkey |
+| Concern | Where it lives | 🚚 Courier |
 |---------|----------------|-----------|
 | What to extract | Provider prompt (next section) | The cartographer's notebook of what symbols mean — towns, roads, road types |
 | Where to write it | `graph_store.upsert_topic` / `upsert_relationship` | The pencil that puts the new town and road onto the official paper map |
 | Edge hygiene | The `if source_id in topic_ids and target_id in topic_ids` filter | The cartographer's rule: never draw a road to a town that wasn't surveyed today |
 | Default relation type | Falls back to `"RELATED_TO"` if missing | If the cartographer didn't label the road, it's marked as a generic connection rather than dropped |
 
-- 🫏 **Donkey:** The orchestrator is the cartographer's clerk — handles the paperwork, defends edge hygiene, and lets the cartographer (the LLM) focus on the actual reading and drawing.
+- 🚚 **Courier:** The orchestrator is the cartographer's clerk — handles the paperwork, defends edge hygiene, and lets the cartographer (the LLM) focus on the actual reading and drawing.
 
 ---
 
@@ -116,7 +116,7 @@ TEXT:
 {text[:3000]}
 ```
 
-A separate one-line system prompt (`"You extract structured data. Return JSON only."`) overrides the default donkey-analogy prompt — at extraction time we want a JSON robot, not a storyteller.
+A separate one-line system prompt (`"You extract structured data. Return JSON only."`) overrides the default courier-analogy prompt — at extraction time we want a JSON robot, not a storyteller.
 
 After the LLM returns, the parser does:
 
@@ -130,15 +130,15 @@ return json.loads(result[start:end])
 
 > ⚠️ **Text is truncated to 3000 chars before the prompt.** Long chunks (the chunker emits ~800-word chunks ≈ 4–6 KB) get clipped here. This is a deliberate cost guard for the local Ollama path; the cloud providers can override their own truncation in their providers if needed.
 
-| Prompt element | Why it's there | 🫏 Donkey |
+| Prompt element | Why it's there | 🚚 Courier |
 |----------------|----------------|-----------|
 | Closed enum of `relation_type` | Keeps the graph traversable — five types you can query, not 50 free-form labels | The cartographer's pencil only has five colours; no "magenta-ish" roads sneak onto the official map |
-| `id: "slug-name"` schema | Turns "Vector Store" and "vector store" into the same node `vector-store` across files | The town has one official name on the map regardless of how each delivery note spells it |
+| `id: "slug-name"` schema | Turns "Vector Store" and "vector store" into the same node `vector-store` across files | The town has one official name on the map regardless of how each shipping manifest spells it |
 | `evidence: "sentence"` field | Audit trail — every edge can point to the sentence that justified it | Every road on the map has a footnote with the sentence the cartographer copied from the envelope |
-| `Return JSON only` system prompt | Disables the global donkey storyteller mode for this call | The cartographer puts down the storybook and picks up the surveyor's tablet |
+| `Return JSON only` system prompt | Disables the global courier storyteller mode for this call | The cartographer puts down the storybook and picks up the surveyor's tablet |
 | `text[:3000]` truncation | Cost cap for the local model | The cartographer reads the first three pages of a long letter and trusts the chunker to cover the rest |
 
-- 🫏 **Donkey:** The prompt is the cartographer's standing brief — five road colours, one official town name format, and a footnote on every road. Anything outside that brief gets thrown out by the parser.
+- 🚚 **Courier:** The prompt is the cartographer's standing brief — five road colours, one official town name format, and a footnote on every road. Anything outside that brief gets thrown out by the parser.
 
 ---
 
@@ -156,7 +156,7 @@ The chunker has already cut documents into 800-word windows with a nearest-headi
 
 The `Topic` and `Relationship` Pydantic models (see `src/models.py`) carry extra fields like `weight`, `source_repos`, and `created_at` that the LLM does not need to populate — defaults handle them.
 
-- 🫏 **Donkey:** Topics are the towns on the paper map; relationships are the roads between them. Five road colours keep the map readable; everything else falls back to a generic grey road.
+- 🚚 **Courier:** Topics are the towns on the paper map; relationships are the roads between them. Five road colours keep the map readable; everything else falls back to a generic grey road.
 
 ---
 
@@ -174,13 +174,13 @@ Why it matters:
 - Limiting edges to **topics surveyed in the same chunk** ties the relationship's `evidence` field to the literal text the LLM was reading. That's the audit trail that lets a human ask "where did this edge come from?" and see a real sentence.
 - It does NOT prevent two chunks from contributing to the same node — `upsert_topic` is a `MERGE` in Neo4j and a `put_item` in DynamoDB / Cosmos, so the same `topic_id` extracted from chunk A and chunk B converges on one node.
 
-| Without the filter | With the filter | 🫏 Donkey |
+| Without the filter | With the filter | 🚚 Courier |
 |--------------------|-----------------|-----------|
 | Edges point to topics nobody surveyed | Every edge has both endpoints surveyed in the same call | The cartographer doesn't draw roads to towns nobody visited today |
 | `evidence` cites a sentence about A but the edge connects to a phantom B | `evidence` actually mentions both A and B (because both were extracted from the same text window) | Every road footnote references both towns it connects |
-| Graph traversal lands on stub nodes with no description | Every traversal lands on real nodes with names and descriptions | The donkey never arrives at a town with a blank signpost |
+| Graph traversal lands on stub nodes with no description | Every traversal lands on real nodes with names and descriptions | The courier never arrives at a town with a blank signpost |
 
-- 🫏 **Donkey:** The dangling-edge filter is the cartographer's professional ethic: "I do not draw roads to towns I did not survey." Costs one `set` membership check, saves the entire graph from rot.
+- 🚚 **Courier:** The dangling-edge filter is the cartographer's professional ethic: "I do not draw roads to towns I did not survey." Costs one `set` membership check, saves the entire graph from rot.
 
 ---
 
@@ -194,13 +194,13 @@ The current implementation deliberately keeps both *light*:
 
 This is intentional: keeping the graph layer simple lets the chat engine and gap detector use it as a stable substrate. Confidence-as-weight is a planned future extension; today it's a `1.0` everywhere placeholder.
 
-| Aspect | Today | Planned/possible | 🫏 Donkey |
+| Aspect | Today | Planned/possible | 🚚 Courier |
 |--------|-------|------------------|-----------|
 | Topic dedup | By exact `id` slug | LLM-side canonical-name lookup before extraction | The cartographer's town index is a strict spelling check; "Embeddings-Town" and "embeddings-town" are filed separately until a typo gets corrected |
 | Edge dedup | By `(source, type, target)` triple | Could count occurrences and update `weight` | The cartographer overwrites the road's footnote each time a fresh sentence justifies the same connection |
-| Confidence scoring | Not computed; `weight = 1.0` everywhere | Could be wired into traversal ranking | Every road is currently a single solid line; future maps may have thicker lines for roads paved by many delivery notes |
+| Confidence scoring | Not computed; `weight = 1.0` everywhere | Could be wired into traversal ranking | Every road is currently a single solid line; future maps may have thicker lines for roads paved by many shipping manifests |
 
-- 🫏 **Donkey:** The cartographer is honest but not yet quantitative — every road exists or doesn't, but none are marked "well-trodden" vs "anecdotal" yet.
+- 🚚 **Courier:** The cartographer is honest but not yet quantitative — every road exists or doesn't, but none are marked "well-trodden" vs "anecdotal" yet.
 
 ---
 
@@ -218,14 +218,14 @@ For one mid-size markdown file (≈ 5–10 chunks at default settings):
 
 Multiply by file count to size a full ingest. Ingesting six sibling repos with ~200 markdown files each ≈ 1,200 files × ~€0.003 = **~€3.60** per full re-ingest on AWS. That's why deterministic chunk IDs and dangling-edge filtering matter — running the pipeline frequently has to stay cheap.
 
-| Cost lever | How to pull it | 🫏 Donkey |
+| Cost lever | How to pull it | 🚚 Courier |
 |------------|----------------|-----------|
 | Chunk size | `RAG_CHUNK_SIZE` ↑ → fewer chunks → fewer LLM calls per file | Bigger envelopes mean fewer cartographer reads per letter — but each read is bigger |
 | Truncation cap | `text[:3000]` in the prompt | The cartographer reads only the first three pages of any one chunk; bigger chunks lose more context |
 | Provider choice | Local for dev, Haiku for staging, GPT-4o-mini for Azure | Choose which cartographer you're paying — local apprentice is free but slow |
 | Re-ingest discipline | Use `delete_by_source` + `upsert_topic` (idempotent) before re-ingesting changed files | The cartographer doesn't re-survey towns that haven't changed |
 
-- 🫏 **Donkey:** Each ingest is a billable cartographer shift. Bigger envelopes, fewer letters, and a cheaper cartographer all reduce the bill — but they trade for context, granularity, and quality respectively.
+- 🚚 **Courier:** Each ingest is a billable cartographer shift. Bigger envelopes, fewer letters, and a cheaper cartographer all reduce the bill — but they trade for context, granularity, and quality respectively.
 
 ---
 
@@ -239,7 +239,7 @@ Multiply by file count to size a full ingest. Ingesting six sibling repos with ~
 | LLM emits new `relation_type` outside the enum | Stored as-is on the edge | Harmless but pollutes the graph; tighten the prompt or post-validate if needed |
 | Network failure mid-extraction | The orchestrator raises; chunks already extracted are persisted | Re-run the ingest — idempotent |
 
-- 🫏 **Donkey:** Every failure mode degrades to "no edges drawn this round" rather than "wrong edges drawn". The dangling-edge filter and the `id`-as-key model make the cartographer's mistakes invisible to the next traversal.
+- 🚚 **Courier:** Every failure mode degrades to "no edges drawn this round" rather than "wrong edges drawn". The dangling-edge filter and the `id`-as-key model make the cartographer's mistakes invisible to the next traversal.
 
 ---
 

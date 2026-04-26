@@ -1,9 +1,9 @@
 """
 Streamlit chat UI — the human face of the knowledge engine.
 
-🫏 Streamlit is the stable door — the donkey waits here for your questions.
-You walk in, ask anything, and the donkey trots off into the graph to find your answer.
-The 👍/👎 buttons are how you train the donkey to get better every visit.
+🚚 Streamlit is the depot door — the courier waits here for your questions.
+You walk in, ask anything, and the courier trots off into the graph to find your answer.
+The 👍/👎 buttons are how you train the courier to get better every visit.
 The 🗺️ Knowledge Gaps sidebar shows where the roads are missing — fix those first.
 """
 import streamlit as st
@@ -15,12 +15,12 @@ API_BASE = st.sidebar.text_input("API URL", value="http://localhost:8200")
 
 st.set_page_config(
     page_title="🧠 Knowledge Engine",
-    page_icon="🫏",
+    page_icon="🚚",
     layout="wide",
 )
 
 st.title("🧠 Knowledge Engine")
-st.caption("Ask anything about your AI portfolio — answers powered by GraphRAG + 🫏 donkey analogy")
+st.caption("Ask anything about your AI portfolio — answers powered by GraphRAG + 🚚 courier analogy")
 
 # --- Sidebar: status ---
 with st.sidebar:
@@ -58,7 +58,7 @@ with st.sidebar:
 
     # --- Knowledge Gaps panel ---
     st.header("🗺️ Knowledge Gaps")
-    st.caption("Questions the donkey couldn't answer from your docs")
+    st.caption("Questions the courier couldn't answer from your docs")
     try:
         r = httpx.get(f"{API_BASE}/wiki/gaps?status=open", timeout=5)
         gaps_data = r.json()
@@ -112,7 +112,7 @@ with st.sidebar:
                 for cand in candidates[:5]:
                     st.markdown(f"**Q:** {cand['question']}")
                     st.markdown(f"**A:** {cand['answer'][:300]}...")
-                    st.info(cand.get("donkey_analogy", ""))
+                    st.info(cand.get("courier_analogy", ""))
                     col_promote, col_discard, _ = st.columns([1, 1, 4])
                     with col_promote:
                         if st.button("👍 Promote", key=f"promote_{cand['id']}"):
@@ -160,8 +160,8 @@ if "session_id" not in st.session_state:
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg.get("donkey"):
-            st.info(msg["donkey"])
+        if msg.get("courier"):
+            st.info(msg["courier"])
         # Show gap warning if present
         if msg.get("confidence") == "gap":
             st.error(f"🔴 **Knowledge Gap** — {msg.get('gap_reason', '')}\n\n💡 {msg.get('gap_suggestion', '')}")
@@ -199,7 +199,7 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
 
     # Call API
     with st.chat_message("assistant"):
-        with st.spinner("🫏 The donkey is thinking..."):
+        with st.spinner("🚚 The courier is thinking..."):
             try:
                 resp = httpx.post(
                     f"{API_BASE}/chat/",
@@ -208,7 +208,7 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
                 )
                 data = resp.json()
                 answer = data.get("answer", "No answer returned.")
-                donkey = data.get("donkey_analogy", "")
+                courier = data.get("courier_analogy", "")
                 sources = data.get("sources", [])
                 topics = data.get("topics", [])
                 latency = data.get("latency_ms", 0)
@@ -218,8 +218,8 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
                 gap_suggestion = data.get("gap_suggestion", "")
 
                 st.markdown(answer)
-                if donkey:
-                    st.info(donkey)
+                if courier:
+                    st.info(courier)
 
                 # Show confidence / source indicator
                 if confidence == "gap":
@@ -253,7 +253,7 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": answer,
-                    "donkey": donkey,
+                    "courier": courier,
                     "sources": sources,
                     "topics": topics,
                     "latency_ms": latency,
@@ -269,12 +269,12 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
 
 st.set_page_config(
     page_title="🧠 Knowledge Engine",
-    page_icon="🫏",
+    page_icon="🚚",
     layout="wide",
 )
 
 st.title("🧠 Knowledge Engine")
-st.caption("Ask anything about your AI portfolio — answers powered by GraphRAG + 🫏 donkey analogy")
+st.caption("Ask anything about your AI portfolio — answers powered by GraphRAG + 🚚 courier analogy")
 
 # --- Sidebar: status ---
 with st.sidebar:
@@ -332,8 +332,8 @@ if "session_id" not in st.session_state:
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg.get("donkey"):
-            st.info(msg["donkey"])
+        if msg.get("courier"):
+            st.info(msg["courier"])
         if msg.get("sources"):
             with st.expander("📎 Sources"):
                 for s in msg["sources"]:
@@ -366,7 +366,7 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
 
     # Call API
     with st.chat_message("assistant"):
-        with st.spinner("🫏 The donkey is thinking..."):
+        with st.spinner("🚚 The courier is thinking..."):
             try:
                 resp = httpx.post(
                     f"{API_BASE}/chat/",
@@ -375,15 +375,15 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
                 )
                 data = resp.json()
                 answer = data.get("answer", "No answer returned.")
-                donkey = data.get("donkey_analogy", "")
+                courier = data.get("courier_analogy", "")
                 sources = data.get("sources", [])
                 topics = data.get("topics", [])
                 latency = data.get("latency_ms", 0)
                 provider = data.get("provider", "")
 
                 st.markdown(answer)
-                if donkey:
-                    st.info(donkey)
+                if courier:
+                    st.info(courier)
                 if sources:
                     with st.expander("📎 Sources"):
                         for s in sources:
@@ -408,7 +408,7 @@ if prompt := st.chat_input("Ask anything about your AI portfolio..."):
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": answer,
-                    "donkey": donkey,
+                    "courier": courier,
                     "sources": sources,
                     "topics": topics,
                     "latency_ms": latency,

@@ -1,8 +1,8 @@
 """
 Graph store base interface.
 
-🫏 The knowledge graph is the map the donkey uses to navigate.
-Without it, the donkey wanders between unconnected topics.
+🚚 The knowledge graph is the map the courier uses to navigate.
+Without it, the courier wanders between unconnected topics.
 With it, a question about "RAG" automatically surfaces
 "Embeddings", "Vector Store", and "Retrieval" — 2 hops away.
 """

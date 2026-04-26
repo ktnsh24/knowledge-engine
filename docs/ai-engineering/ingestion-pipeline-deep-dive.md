@@ -31,14 +31,14 @@ Plain RAG ingestion ends with "embed the chunks, store the vectors". GraphRAG in
 
 This doc covers the part that runs *before* anyone asks a question — the post office pre-sort.
 
-| Concept | What it produces | 🫏 Donkey |
+| Concept | What it produces | 🚚 Courier |
 |---------|------------------|-----------|
-| Scanner | A list of markdown/text file paths across all configured repos | The mail clerk walking every shelf in every stable across the yard, copying down every letter that needs delivering |
-| Chunker | Overlapping `DocumentChunk` records with nearest-heading metadata | The pre-sort clerk slicing each long letter into envelopes the donkey can fit into one backpack pocket |
-| Vector upsert | Each chunk embedded and stored in the GPS warehouse | The clerk stamping every envelope with GPS coordinates so the donkey can find it later by location, not name |
+| Scanner | A list of markdown/text file paths across all configured repos | The mail clerk walking every shelf in every depot across the yard, copying down every letter that needs delivering |
+| Chunker | Overlapping `DocumentChunk` records with nearest-heading metadata | The pre-sort clerk slicing each long letter into envelopes the courier can fit into one parcel compartment |
+| Vector upsert | Each chunk embedded and stored in the GPS warehouse | The clerk stamping every envelope with GPS coordinates so the courier can find it later by location, not name |
 | Graph extraction | Topics + relationships pulled from the chunk text by the LLM | The town-cartographer reading every envelope and pencilling new towns and roads onto the official paper map |
 
-- 🫏 **Donkey:** Ingestion is the post office pre-sort *and* the cartographer's afternoon shift, both happening at the same desk so the donkey has a full GPS warehouse and a full paper map before anyone asks for a delivery.
+- 🚚 **Courier:** Ingestion is the post office pre-sort *and* the cartographer's afternoon shift, both happening at the same desk so the courier has a full GPS warehouse and a full paper map before anyone asks for a delivery.
 
 ---
 
@@ -73,7 +73,7 @@ SOURCE_REPOS_PATH (e.g. ../)
 
 Both stores are written from the **same chunk stream**. Nothing forces them to be in lock-step transactionally — if graph extraction fails for a chunk, the vector for that chunk still lands. This is by design; see [Failure Modes](#failure-modes-and-recovery).
 
-- 🫏 **Donkey:** One pile of envelopes goes through two stations in parallel — GPS-stamping at the warehouse desk and town-pencilling at the cartographer's desk. If the cartographer drops one, the warehouse copy is still on the shelf.
+- 🚚 **Courier:** One pile of envelopes goes through two stations in parallel — GPS-stamping at the warehouse desk and town-pencilling at the cartographer's desk. If the cartographer drops one, the warehouse copy is still on the shelf.
 
 ---
 
@@ -97,13 +97,13 @@ What it does NOT do:
 - No incremental "only changed files" mode — every run re-scans the full set.
 - Missing repos log a `repo_not_found` warning and are skipped silently.
 
-| Field | What it controls | 🫏 Donkey |
+| Field | What it controls | 🚚 Courier |
 |-------|------------------|-----------|
-| `source_repos_path` | Where the scanner starts walking | The address of the yard where every stable being mailed is parked — change it and the donkey delivers to a different town |
+| `source_repos_path` | Where the scanner starts walking | The address of the yard where every depot being mailed is parked — change it and the courier delivers to a different town |
 | `include_patterns` | Which files count as "documents" | The list of envelope shapes the clerk is allowed to touch — markdown letters and plain notes only |
 | `exclude_patterns` | Junk to skip | The "do not enter" stickers on shelves full of build artefacts and dependency junk |
 
-- 🫏 **Donkey:** The scanner is the mail clerk who only picks up handwritten letters (`.md`, `.txt`) from the right stables and refuses to touch the rubbish bins (`node_modules`, `.venv`, `site`, `__pycache__`).
+- 🚚 **Courier:** The scanner is the mail clerk who only picks up handwritten letters (`.md`, `.txt`) from the right depots and refuses to touch the rubbish bins (`node_modules`, `.venv`, `site`, `__pycache__`).
 
 ---
 
@@ -122,14 +122,14 @@ Defaults from `config.py`: `RAG_CHUNK_SIZE=800`, `RAG_CHUNK_OVERLAP=100`. The de
 
 > ⚠️ **`chunk_size` here means words, not characters and not LLM tokens.** Lab #1 (Tier 1 chunk-size sweep) sweeps this dimension, but interpret the values as word-counts when reading the lab tables.
 
-| Step | Code reference | 🫏 Donkey |
+| Step | Code reference | 🚚 Courier |
 |------|----------------|-----------|
 | Word tokenisation | `text.split()` on line 49 | The clerk treats every space as a perforation line on the letter |
 | Sliding window | `i += chunk_size - overlap` on line 79 | Each envelope shares its last 100 words with the next envelope's first 100 — so a sentence cut in the middle still arrives in one piece |
-| Heading propagation | Lines 60–69 walk lines until `char_count > char_pos` | Each envelope is stamped with the section title above it so the donkey knows which chapter it belongs to |
+| Heading propagation | Lines 60–69 walk lines until `char_count > char_pos` | Each envelope is stamped with the section title above it so the courier knows which chapter it belongs to |
 | Deterministic ID | `md5(f"{path}:{chunk_index}")[:12]` line 58 | A re-ingest of the same file produces the same envelope barcodes — the GPS warehouse `upsert` overwrites in place instead of duplicating |
 
-- 🫏 **Donkey:** The chunker is the pre-sort station: every long letter becomes a stack of overlapping envelopes, each labelled with the section heading and a stable barcode so re-deliveries don't pile up duplicates.
+- 🚚 **Courier:** The chunker is the pre-sort station: every long letter becomes a stack of overlapping envelopes, each labelled with the section heading and a stable barcode so re-deliveries don't pile up duplicates.
 
 ---
 
@@ -145,7 +145,7 @@ What happens inside `upsert` is provider-specific, but the contract is the same:
 
 Ingestion does NOT pre-compute embeddings on the chunk objects — the `embedding: list[float] = []` field on `DocumentChunk` (see `models.py`) is intentionally left empty here. Each provider embeds at upsert time using its own client. This keeps embedding costs and dimensions inside the provider that owns them.
 
-- 🫏 **Donkey:** The vector upsert step hands the envelope stack to whichever GPS warehouse is on duty (local barn, AWS depot, or Azure hub). Each warehouse stamps coordinates in its own format — same envelope, three coordinate systems.
+- 🚚 **Courier:** The vector upsert step hands the envelope stack to whichever GPS warehouse is on duty (local barn, AWS depot, or Azure hub). Each warehouse stamps coordinates in its own format — same envelope, three coordinate systems.
 
 ---
 
@@ -160,13 +160,13 @@ After (or alongside) the vector upsert, each chunk's `text` is passed to `extrac
 
 The actual prompt and JSON parsing live in the LLM provider (see [Graph Extractor Deep Dive](graph-extractor-deep-dive.md) and `src/llm/ollama.py`, `src/llm/bedrock.py`, `src/llm/azure_openai.py`).
 
-| Element | Source | 🫏 Donkey |
+| Element | Source | 🚚 Courier |
 |---------|--------|-----------|
 | Topic node | `Topic(id, name, description)` from the LLM JSON | A new town pencilled onto the paper map with its slug-name and a one-line description |
 | Relationship edge | `Relationship(source_id, target_id, relation_type, evidence)` | A road drawn between two towns, labelled `USED_BY` / `STORED_IN` / `REQUIRED_BY` and footnoted with the sentence that justified it |
 | Dangling-edge filter | The `if r["source_id"] in topic_ids and r["target_id"] in topic_ids` guard on line 28 | The cartographer refuses to draw a road to a town that wasn't surveyed in the same trip — keeps the map honest |
 
-- 🫏 **Donkey:** Graph extraction is the cartographer reading each envelope, pencilling any new towns onto the paper map and drawing roads only between towns surveyed on the same delivery run.
+- 🚚 **Courier:** Graph extraction is the cartographer reading each envelope, pencilling any new towns onto the paper map and drawing roads only between towns surveyed on the same delivery run.
 
 ---
 
@@ -174,10 +174,10 @@ The actual prompt and JSON parsing live in the LLM provider (see [Graph Extracto
 
 All settings come from `src/config.py` via Pydantic. Override via `.env`.
 
-| Variable | Default | What it controls | 🫏 Donkey |
+| Variable | Default | What it controls | 🚚 Courier |
 |----------|---------|------------------|-----------|
-| `SOURCE_REPOS_PATH` | `../` | Yard root the scanner walks from | The address of the depot where every stable is parked |
-| `SOURCE_REPOS` | six sibling repos | CSV of repo folder names to scan | The list of stables the mail clerk is allowed to enter |
+| `SOURCE_REPOS_PATH` | `../` | Yard root the scanner walks from | The address of the depot where every depot is parked |
+| `SOURCE_REPOS` | six sibling repos | CSV of repo folder names to scan | The list of depots the mail clerk is allowed to enter |
 | `INCLUDE_PATTERNS` | `**/*.md,**/*.txt` | Glob shapes that count as documents | The two envelope shapes the clerk is licensed to handle |
 | `EXCLUDE_PATTERNS` | `node_modules`, `.venv`, `site`, `__pycache__` | Glob shapes to skip | The "do not enter" stickers on rubbish shelves |
 | `RAG_CHUNK_SIZE` | `800` | Words per chunk window | The size of each envelope — bigger envelope, fewer cuts, more words per pocket |
@@ -203,15 +203,15 @@ Ingestion is **best-effort and idempotent**, not transactional.
 | Vector store upsert fails mid-batch | Provider raises; the loop above stops | Re-run ingestion — `chunk_id` is deterministic so survivors are overwritten in place, not duplicated |
 | `chunk_document` receives an empty file | Returns `[]` immediately (line 50–51) | None needed |
 
-| Failure mode | 🫏 Donkey |
+| Failure mode | 🚚 Courier |
 |--------------|-----------|
-| Missing repo | The mail clerk shrugs at the empty stable, jots a note in the logbook, and walks on |
+| Missing repo | The mail clerk shrugs at the empty depot, jots a note in the logbook, and walks on |
 | Bad encoding | The clerk smudges over the unreadable letters and copies the rest |
 | LLM JSON fails | The cartographer can't read the envelope's handwriting today, so no new towns get pencilled — the GPS-stamped envelope still made it onto the warehouse shelf |
 | Dangling edge | The cartographer refuses to draw a road to a town nobody surveyed |
 | Mid-batch crash | Re-running the route is safe because every envelope has a stable barcode |
 
-- 🫏 **Donkey:** Nothing in this pipeline is transactional. The barcode-as-key trick (`md5(path:index)`) means the donkey can re-walk the route any number of times and the warehouse never grows duplicate envelopes.
+- 🚚 **Courier:** Nothing in this pipeline is transactional. The barcode-as-key trick (`md5(path:index)`) means the courier can re-walk the route any number of times and the warehouse never grows duplicate envelopes.
 
 ---
 
@@ -223,7 +223,7 @@ Ingestion is **best-effort and idempotent**, not transactional.
 - ❌ No deduplication of topics across files — same topic ID extracted from two files just `MERGE`s into the same node, which is the desired behaviour.
 - ❌ No PDF / DOCX / source-code parsing — markdown only.
 
-- 🫏 **Donkey:** Ingestion is just the pre-sort. Quality reports, brochure writing, and "is this worth delivering?" judgements happen elsewhere — keeps the pre-sort station fast and dumb.
+- 🚚 **Courier:** Ingestion is just the pre-sort. Quality reports, brochure writing, and "is this worth delivering?" judgements happen elsewhere — keeps the pre-sort station fast and dumb.
 
 ---
 

@@ -4,8 +4,8 @@ Feedback processor — the learning loop.
 When you 👍 an answer → add Q&A pair to wiki as "Verified Answer"
 When you 👎 an answer → flag topic for wiki improvement + add to eval set
 
-🫏 Feedback is the donkey's memory. Without it, the donkey forgets every delivery.
-With it, the donkey remembers: "Last time someone asked about caching,
+🚚 Feedback is the courier's memory. Without it, the courier forgets every delivery.
+With it, the courier remembers: "Last time someone asked about caching,
 the short answer wasn't enough — give more detail next time."
 """
 import json

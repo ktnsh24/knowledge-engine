@@ -1,7 +1,7 @@
 """
 GraphRAG chat engine — combines vector search + graph traversal + fallback.
 
-🫏 The chat engine is the donkey's dispatcher:
+🚚 The chat engine is the courier's dispatcher:
   1. Vector store finds the most relevant chunks
   2. Graph store expands context to connected topics
   3. Gap detector checks confidence: HIGH / PARTIAL / GAP
@@ -9,13 +9,13 @@ GraphRAG chat engine — combines vector search + graph traversal + fallback.
      GAP           → LLM answers from training knowledge (fallback)
                    → answer saved as CANDIDATE for human review
                    → promote with 👍 → answer joins docs → gap closes
-  Without step 3+4, the donkey silently answers from memory and you never know.
-  With step 3+4, the donkey marks the broken road AND still delivers — honestly.
+  Without step 3+4, the courier silently answers from memory and you never know.
+  With step 3+4, the courier marks the broken road AND still delivers — honestly.
 """
 import time
 from src.llm.base import (
     BaseLLM,
-    DONKEY_SYSTEM_PROMPT,
+    COURIER_SYSTEM_PROMPT,
     FALLBACK_SYSTEM_PROMPT,
     get_system_prompt,
 )
@@ -88,7 +88,7 @@ class ChatEngine:
             candidate = await self.candidate_store.save_candidate(
                 question=request.question,
                 answer=answer_text,
-                donkey_analogy=_extract_donkey(answer_text),
+                courier_analogy=_extract_courier(answer_text),
                 gap_id=gap.id,
             )
             candidate_id = candidate.id
@@ -130,7 +130,7 @@ class ChatEngine:
 
         return ChatResponse(
             answer=answer_text,
-            donkey_analogy=_extract_donkey(answer_text),
+            courier_analogy=_extract_courier(answer_text),
             sources=sources,
             topics=topic_names,
             retrieval_score=top_score,
@@ -147,10 +147,10 @@ class ChatEngine:
         )
 
 
-def _extract_donkey(answer: str) -> str:
-    """Extract the 🫏 donkey analogy line from an answer."""
-    start = answer.find("🫏")
+def _extract_courier(answer: str) -> str:
+    """Extract the 🚚 courier analogy line from an answer."""
+    start = answer.find("🚚")
     if start == -1:
-        return "🫏 The LLM is the donkey carrying your question to an answer."
+        return "🚚 The LLM is the courier carrying your question to an answer."
     end = answer.find("\n", start + 1)
     return answer[start:end].strip() if end != -1 else answer[start:].strip()

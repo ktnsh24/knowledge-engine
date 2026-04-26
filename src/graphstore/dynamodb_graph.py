@@ -3,8 +3,8 @@ DynamoDB graph store — AWS provider.
 Stores the graph as adjacency lists (topics table + edges table).
 No Neptune needed — keeps costs under €1/run.
 
-🫏 DynamoDB is the road map printed on paper — not as fast as a GPS (Neo4j),
-but it gets the donkey to the destination without renting a car.
+🚚 DynamoDB is the road map printed on paper — not as fast as a GPS (Neo4j),
+but it gets the courier to the destination without renting a car.
 """
 import boto3
 from src.graphstore.base import BaseGraphStore

@@ -38,7 +38,7 @@ async def list_gaps(status: str | None = None):
     List all detected knowledge gaps.
     ?status=open|resolved — optional filter.
 
-    🫏 These are the broken roads — questions the donkey couldn't answer from your docs.
+    🚚 These are the broken roads — questions the courier couldn't answer from your docs.
     """
     gaps = _gap_detector.list_gaps(status_filter=status)
     summary = _gap_detector.gap_summary()
@@ -69,7 +69,7 @@ async def list_candidates(status: str | None = "pending"):
       POST /wiki/candidates/{id}/promote  → adds to verified-answers.md → next ingest = grounded
       POST /wiki/candidates/{id}/discard  → removes, gap stays open
 
-    🫏 These are the donkey's off-road notes: 'I found a path through the wilderness.
+    🚚 These are the courier's off-road notes: 'I found a path through the wilderness.
     Check if it's safe before we make it an official road.'
     """
     candidates = _candidate_store.list_candidates(status_filter=status)

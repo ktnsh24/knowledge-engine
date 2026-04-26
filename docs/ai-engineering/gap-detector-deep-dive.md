@@ -20,7 +20,7 @@
 - [Resolving a gap](#resolving-a-gap)
 - [The summary panel](#the-summary-panel)
 - [Tuning the thresholds](#tuning-the-thresholds)
-- [🫏 Donkey explainer — the auditor with the red marker](#-donkey-explainer--the-auditor-with-the-red-marker)
+- [🚚 Courier explainer — the auditor with the red marker](#-courier-explainer--the-auditor-with-the-red-marker)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -47,10 +47,10 @@ HIGH_CONFIDENCE_THRESHOLD = 0.70
 PARTIAL_CONFIDENCE_THRESHOLD = 0.40
 ```
 
-| Level | Trigger | Saved to disk? | Chat engine routing | 🫏 Donkey |
+| Level | Trigger | Saved to disk? | Chat engine routing | 🚚 Courier |
 |-------|---------|----------------|---------------------|-----------|
 | `HIGH` | `top_score ≥ 0.70` AND `chunk_count ≥ 2` | No — `save_gap()` short-circuits | Strict prompt + chunks + neighbour topics | Auditor green-stamps the trip; nothing goes in the red drawer |
-| `PARTIAL` | `top_score ≥ 0.40` OR `chunk_count ≥ 1` | Yes — `🟡 PARTIAL` row in `unanswered.md` and a JSONL line | Strict prompt + chunks + an inline `[NOTE: Coverage is partial...]` notice | Auditor yellow-flags the trip and notes the half-empty backpack so the supervisor knows where to add pages |
+| `PARTIAL` | `top_score ≥ 0.40` OR `chunk_count ≥ 1` | Yes — `🟡 PARTIAL` row in `unanswered.md` and a JSONL line | Strict prompt + chunks + an inline `[NOTE: Coverage is partial...]` notice | Auditor yellow-flags the trip and notes the half-empty parcel so the supervisor knows where to add pages |
 | `GAP` | Neither threshold met | Yes — `🔴 GAP` row plus a candidate via the chat engine | Fallback prompt with empty context | Auditor red-flags the trip; the made-up route is filed on the supervisor's clipboard for promotion or rejection |
 
 Confidence is decided by **score *and* count**, not score alone — one good
@@ -88,7 +88,7 @@ def assess_confidence(self, question, top_retrieval_score, chunk_count, topic_co
 
 A few details worth pausing on:
 
-| Detail | Why it matters | 🫏 Donkey |
+| Detail | Why it matters | 🚚 Courier |
 |--------|---------------|-----------|
 | `gap_id = uuid.uuid4()[:8]` | Short hex id is easier to reference in chat responses, URLs, and the markdown ledger | A short ticket number the supervisor can read aloud without spelling out 36 characters |
 | `assess_confidence` does NOT save the gap | Pure function, easy to unit test; chat engine decides whether to persist | The auditor scores every trip but only files the paperwork when the dispatcher tells them to |
@@ -105,7 +105,7 @@ self.gaps_file = self.gaps_path / "unanswered.md"
 self.gaps_jsonl = self.gaps_path / "gaps.jsonl"
 ```
 
-| File | Format | Read by | 🫏 Donkey |
+| File | Format | Read by | 🚚 Courier |
 |------|--------|---------|-----------|
 | `wiki/gaps/unanswered.md` | Append-only markdown — one section per gap with `🟡 PARTIAL` or `🔴 GAP` heading, the question, the score, the reason, and the suggestion | Humans (open in any markdown viewer) | The wall poster of every flagged trip — the supervisor reads it over coffee and decides which roads to build first |
 | `wiki/gaps/gaps.jsonl` | One JSON object per line; full `KnowledgeGap` schema | `list_gaps()`, `gap_summary()`, `resolve_gap()`, the `GET /wiki/gaps` route | The auditor's filing cabinet — same data as the wall poster but shaped for queries and bulk updates |
@@ -160,12 +160,12 @@ This dict is what `GET /wiki/gaps` returns under `summary`; a UI status panel
 or a CI smoke test can compare two snapshots to prove the loop is working
 ("yesterday: 12 red / 7 yellow; today: 3 red / 4 yellow → progress").
 
-| Field | Meaning | 🫏 Donkey |
+| Field | Meaning | 🚚 Courier |
 |-------|---------|-----------|
 | `total` | All gaps ever detected (open + resolved) | Lifetime count of red and yellow flags the auditor has ever filed |
 | `open` | Currently unresolved gaps | Tickets still pinned to the wall waiting for a road to be built |
-| `red_gaps` | Open gaps with `confidence=GAP` (no docs at all) | Trips the donkey had to invent — top of the priority list |
-| `yellow_partials` | Open gaps with `confidence=PARTIAL` (some docs but thin) | Trips that mostly worked but need a bigger backpack |
+| `red_gaps` | Open gaps with `confidence=GAP` (no docs at all) | Trips the courier had to invent — top of the priority list |
+| `yellow_partials` | Open gaps with `confidence=PARTIAL` (some docs but thin) | Trips that mostly worked but need a bigger parcel |
 | `resolved` | Gaps that were closed (docs added, re-ingested, or candidate promoted + re-ingested) | Tickets the supervisor has crossed off after building the missing road |
 
 ---
@@ -189,20 +189,20 @@ everything is a `GAP`" or "suddenly nothing is a `GAP`."
 
 ---
 
-## 🫏 Donkey explainer — the auditor with the red marker
+## 🚚 Courier explainer — the auditor with the red marker
 
 The gap detector is the honest auditor sitting at the loading dock. After the
-dispatcher hands the donkey a backpack, the auditor weighs it: how bright is
-the brightest GPS coordinate, how many pages did the donkey actually carry,
+dispatcher hands the courier a parcel, the auditor weighs it: how bright is
+the brightest GPS coordinate, how many pages did the courier actually carry,
 how many neighbour towns did the cartographer flag? If the brightest hit is
 clear and there are at least two pages, green stamp — go deliver, no
 paperwork. If the brightest hit is dim or there is only one page, yellow flag,
-file a yellow note in the wall drawer and tell the donkey to be honest in the
-delivery note about what's missing. If neither check passes, red flag, file a
-red note, and let the supervisor know the donkey will be writing this one
-from memory — clip a copy of whatever the donkey writes onto the supervisor's
+file a yellow note in the wall drawer and tell the courier to be honest in the
+shipping manifest about what's missing. If neither check passes, red flag, file a
+red note, and let the supervisor know the courier will be writing this one
+from memory — clip a copy of whatever the courier writes onto the supervisor's
 clipboard so they can choose to promote it (build the road for real) or
-reject it (the donkey's invention was wrong).
+reject it (the courier's invention was wrong).
 
 ---
 

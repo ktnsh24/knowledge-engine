@@ -16,13 +16,13 @@
 - [Internal flow](#internal-flow)
 - [`curl` examples](#curl-examples)
 - [Error cases](#error-cases)
-- [🫏 Donkey explainer — the map room window](#-donkey-explainer--the-map-room-window)
+- [🚚 Courier explainer — the map room window](#-courier-explainer--the-map-room-window)
 
 ---
 
 ## Endpoint summary
 
-| Method | Path | Auth | Purpose | 🫏 Donkey |
+| Method | Path | Auth | Purpose | 🚚 Courier |
 |--------|------|------|---------|-----------|
 | POST | `/wiki/rebuild` | none | Regenerate every per-topic markdown article + the index from the current graph + vectors | Reprint every brochure in the rack from today's paper map and warehouse contents |
 | GET | `/wiki/topics` | none | Return every `Topic` in the graph (id, name, description, source repos) | Read the cartographer's full town register through the window |
@@ -173,7 +173,7 @@ curl -X POST http://localhost:8200/wiki/candidates/ab12cd34/promote
 
 ## Error cases
 
-| Trigger | Response | 🫏 Donkey |
+| Trigger | Response | 🚚 Courier |
 |---------|----------|-----------|
 | `POST /wiki/rebuild` while no topics exist (graph is empty) | `200` with `pages_generated: 0` | The brochure printer ran but had no town list, so no brochures were printed |
 | `POST /wiki/rebuild` while LLM is unreachable | `500` with `detail=<exception message>` | The writer at the desk is unavailable; the printer halts and shouts the reason out the window |
@@ -184,9 +184,9 @@ curl -X POST http://localhost:8200/wiki/candidates/ab12cd34/promote
 
 ---
 
-## 🫏 Donkey explainer — the map room window
+## 🚚 Courier explainer — the map room window
 
-The wiki window is the wall of the stable that lets you see the cartographer's
+The wiki window is the wall of the depot that lets you see the cartographer's
 work without going inside. Through the topic window you can read every town
 the cartographer has registered; through the graph window you can pull the
 entire paper map out for inspection; through the rebuild lever you can ask
@@ -194,7 +194,7 @@ the brochure printer to reprint a tourist guide for every town from the
 current map and warehouse contents. To the right of the rack are two extra
 windows: the wall of red and yellow flags listing every trip the auditor
 flagged as needing more docs, and the supervisor's clipboard with the off-road
-notes the donkey wrote from memory. You can promote good clipboard notes
+notes the courier wrote from memory. You can promote good clipboard notes
 (they get framed and re-shelved on the next pre-sort) or discard the bad ones
 (the red flag stays). The whole map room is read-mostly — none of these
 endpoints write to the corpus directly except `promote`, and even then the

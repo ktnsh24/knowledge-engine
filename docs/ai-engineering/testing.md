@@ -20,7 +20,7 @@
 - [How to run each layer](#how-to-run-each-layer)
 - [Coverage targets](#coverage-targets)
 - [What CI gates look like](#what-ci-gates-look-like)
-- [🫏 Donkey explainer — the quality gates before every shipment](#-donkey-explainer--the-quality-gates-before-every-shipment)
+- [🚚 Courier explainer — the quality gates before every shipment](#-courier-explainer--the-quality-gates-before-every-shipment)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -30,7 +30,7 @@
 
 A RAG/GraphRAG project has *two* kinds of correctness — code correctness
 (does the function return what it claims?) and answer correctness (does the
-donkey answer the user's question well?). One pyramid alone covers neither —
+courier answer the user's question well?). One pyramid alone covers neither —
 unit tests will not catch hallucination, and an eval suite will not catch a
 chunker off-by-one. This doc maps every kind of test in the project to the
 layer that catches it.
@@ -57,7 +57,7 @@ slower and more semantic the assertion.
 
 | Layer | What it catches | What it MISSES |
 |-------|----------------|----------------|
-| Unit | Off-by-one in chunker, wrong threshold in gap detector, broken JSON parsing in faithfulness judge fallback | "The donkey hallucinated about caching" — the answer-grade question |
+| Unit | Off-by-one in chunker, wrong threshold in gap detector, broken JSON parsing in faithfulness judge fallback | "The courier hallucinated about caching" — the answer-grade question |
 | Integration | A vector store + graph store mismatch, a missing `app.state.*` wiring, a 500 from `POST /chat` because Ollama is down | "The retrieval is technically working but the score dropped from 0.75 to 0.55 since the last embedding-model swap" |
 | Eval | Quality regressions across the 9 metrics, per-question pass/fail, hallucination-rate trend | "Why did this *specific* question's faithfulness drop?" — that needs a debug run, not the eval suite |
 
@@ -174,19 +174,19 @@ prompts feel better" change from silently regressing the report card.
 
 ---
 
-## 🫏 Donkey explainer — the quality gates before every shipment
+## 🚚 Courier explainer — the quality gates before every shipment
 
-Testing is the three quality gates the donkey passes before any new behaviour
-goes out the stable door. The first gate is the parts inspector: every screw,
+Testing is the three quality gates the courier passes before any new behaviour
+goes out the depot door. The first gate is the parts inspector: every screw,
 threshold, and JSON parser is checked individually so nothing obviously broken
-leaves the workshop. The second gate is the dry-run loading dock: the donkey
-actually loads a small backpack from a real warehouse, walks through the gate,
+leaves the workshop. The second gate is the dry-run loading dock: the courier
+actually loads a small parcel from a real warehouse, walks through the gate,
 and proves the whole route works end-to-end on the practice course. The third
 gate is the road inspector with the nine clipboards: standard test deliveries
-are driven for real and graded across nine columns, and any donkey whose
+are driven for real and graded across nine columns, and any courier whose
 average grade dips below the line is sent back to the workshop. The first gate
 runs in seconds on every save; the second gate runs locally when you change
-the wiring; the third gate runs before any new donkey is allowed to start a
+the wiring; the third gate runs before any new courier is allowed to start a
 shift.
 
 ---

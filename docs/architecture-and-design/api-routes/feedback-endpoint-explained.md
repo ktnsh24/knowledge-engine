@@ -14,13 +14,13 @@
 - [Internal flow](#internal-flow)
 - [`curl` examples](#curl-examples)
 - [Error cases](#error-cases)
-- [🫏 Donkey explainer — the trip-debrief window](#-donkey-explainer--the-trip-debrief-window)
+- [🚚 Courier explainer — the trip-debrief window](#-courier-explainer--the-trip-debrief-window)
 
 ---
 
 ## Endpoint summary
 
-| Method | Path | Auth | Purpose | 🫏 Donkey |
+| Method | Path | Auth | Purpose | 🚚 Courier |
 |--------|------|------|---------|-----------|
 | POST | `/feedback/` | none | Record a 👍/👎 verdict on a chat answer; 👍 appends the Q&A to `wiki/feedback/verified-answers.md` (re-ingested on the next run), 👎 appends the question to `scripts/golden-questions.yaml` (graded on the next eval) | The trip-debrief window — supervisors hand in good/bad verdicts on yesterday's deliveries and the next pre-sort or next inspection acts on them |
 
@@ -140,7 +140,7 @@ curl -X POST http://localhost:8200/feedback/ \
 
 ## Error cases
 
-| Trigger | Response | 🫏 Donkey |
+| Trigger | Response | 🚚 Courier |
 |---------|----------|-----------|
 | Missing required field (e.g. no `thumbs_up`) | `422 Unprocessable Entity` from FastAPI's Pydantic validation | The trip-debrief form was submitted blank; the window operator hands it back |
 | `wiki/feedback/` directory missing | The processor creates it on init (`mkdir(parents=True, exist_ok=True)`); first request after a fresh checkout still works | Trip-debrief drawer is built the first time someone files a verdict |
@@ -151,16 +151,16 @@ curl -X POST http://localhost:8200/feedback/ \
 
 ---
 
-## 🫏 Donkey explainer — the trip-debrief window
+## 🚚 Courier explainer — the trip-debrief window
 
 The feedback window is where supervisors finish each delivery. They look at
-the donkey's delivery note, decide if it was a good trip, and drop a small
+the courier's shipping manifest, decide if it was a good trip, and drop a small
 form through the slot. Every form goes into the bottom drawer of the cabinet
 (the raw audit log) regardless of verdict — that drawer never lies about what
 the supervisors actually said. On a 👍, the window operator also walks the
 form to the wiki cabinet's verified drawer where the next pre-sort will
-re-shelve the Q&A as part of the corpus, so the next donkey starts that
-delivery with the answer already in the backpack. On a 👎, the operator
+re-shelve the Q&A as part of the corpus, so the next courier starts that
+delivery with the answer already in the parcel. On a 👎, the operator
 instead walks the form to the inspector's binder so that question becomes
-a permanent test delivery — and any future change to the donkey or the
+a permanent test delivery — and any future change to the courier or the
 warehouse has to pass it before going out the door.

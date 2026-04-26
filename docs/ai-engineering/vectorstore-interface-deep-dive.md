@@ -30,13 +30,13 @@ The chat engine, ingestion pipeline, and gap detector all need to "store and sea
 
 `BaseVectorStore` is the contract that lets any of those three (and any future fourth) be swapped in by changing one environment variable. The factory enforces "you get exactly one implementation per process".
 
-| Without an interface | With `BaseVectorStore` | 🫏 Donkey |
+| Without an interface | With `BaseVectorStore` | 🚚 Courier |
 |----------------------|------------------------|-----------|
-| Every caller imports `chromadb` directly | Callers import `BaseVectorStore` and call abstract methods | The donkey learns one set of warehouse rules and walks into any of three warehouses without re-training |
-| Provider switch = grep-and-rewrite across the codebase | Provider switch = `CLOUD_PROVIDER=azure` in `.env` | The yard manager flips one sign and the donkey reroutes to a different warehouse for the rest of the day |
-| Tests need a real ChromaDB running | Tests use an in-memory mock that implements the four methods | The trainee donkey practises on a paper-cardboard warehouse before being trusted with the real one |
+| Every caller imports `chromadb` directly | Callers import `BaseVectorStore` and call abstract methods | The courier learns one set of warehouse rules and walks into any of three warehouses without re-training |
+| Provider switch = grep-and-rewrite across the codebase | Provider switch = `CLOUD_PROVIDER=azure` in `.env` | The yard manager flips one sign and the courier reroutes to a different warehouse for the rest of the day |
+| Tests need a real ChromaDB running | Tests use an in-memory mock that implements the four methods | The trainee courier practises on a paper-cardboard warehouse before being trusted with the real one |
 
-- 🫏 **Donkey:** The interface is the warehouse door rules — height of the loading bay, shape of the envelope shelves, where the search desk sits. Any GPS warehouse that follows them can serve the donkey, no extra training required.
+- 🚚 **Courier:** The interface is the warehouse door rules — height of the loading bay, shape of the envelope shelves, where the search desk sits. Any GPS warehouse that follows them can serve the courier, no extra training required.
 
 ---
 
@@ -79,13 +79,13 @@ Three things to notice:
 2. **`DocumentChunk` is the only data type crossing the boundary.** No raw vectors, no provider-specific result objects. `score: float` is a field on `DocumentChunk` and providers populate it on the way back out.
 3. **Embedding is implicit, not a parameter.** Providers are responsible for embedding the chunks themselves — the caller never passes a vector. This keeps embedding model choice paired with the provider that owns it (Ollama for local, Bedrock Titan for AWS, Azure OpenAI `text-embedding-3-small` for Azure).
 
-| Design choice | What it enables | 🫏 Donkey |
+| Design choice | What it enables | 🚚 Courier |
 |---------------|-----------------|-----------|
-| All methods async | FastAPI handlers don't block while a slow Bedrock call resolves | The donkey doesn't fall asleep at the warehouse door waiting for a slow clerk; the next delivery can be in flight already |
+| All methods async | FastAPI handlers don't block while a slow Bedrock call resolves | The courier doesn't fall asleep at the warehouse door waiting for a slow clerk; the next delivery can be in flight already |
 | `DocumentChunk` as wire format | One data shape from ingest to chat answer | Every envelope on every shelf has the same address card — no special-case handling per warehouse |
-| Embedding hidden behind `upsert` | Caller never picks an embedding model | The donkey doesn't choose which GPS-coordinate format the warehouse uses; it just hands over the envelope |
+| Embedding hidden behind `upsert` | Caller never picks an embedding model | The courier doesn't choose which GPS-coordinate format the warehouse uses; it just hands over the envelope |
 
-- 🫏 **Donkey:** Four words on the warehouse door — `upsert`, `search`, `chunk_count`, `delete_by_source`. Anything else is internal warehouse business and the donkey doesn't care.
+- 🚚 **Courier:** Four words on the warehouse door — `upsert`, `search`, `chunk_count`, `delete_by_source`. Anything else is internal warehouse business and the courier doesn't care.
 
 ---
 
@@ -108,7 +108,7 @@ Three things to notice:
 | DynamoDB | `_embed_text` → Bedrock Titan in `_sync_upsert` | DynamoDB table from `dynamodb_vector_table` setting |
 | Azure AI Search | `self.openai_client.embeddings.create` in `_embed` | Azure AI Search index `knowledge-engine-vectors` |
 
-- 🫏 **Donkey:** `upsert` is the loading bay. The donkey hands over a batch of envelopes; the warehouse stamps each with GPS coordinates, files them by barcode, and shouts back the count.
+- 🚚 **Courier:** `upsert` is the loading bay. The courier hands over a batch of envelopes; the warehouse stamps each with GPS coordinates, files them by barcode, and shouts back the count.
 
 ---
 
@@ -132,7 +132,7 @@ Three things to notice:
 | Score normalisation | `1 - cosine_distance` | min-max over the result set | native `@search.score` |
 | Practical scale | ~1M chunks before HNSW tuning matters | ~100k chunks (scan cost) | tens of millions |
 
-- 🫏 **Donkey:** `search` is the warehouse search desk. The donkey arrives with a written question; the clerk turns it into GPS coordinates, fetches the closest envelopes, and hands back a stack ranked by closeness.
+- 🚚 **Courier:** `search` is the warehouse search desk. The courier arrives with a written question; the clerk turns it into GPS coordinates, fetches the closest envelopes, and hands back a stack ranked by closeness.
 
 ---
 
@@ -144,7 +144,7 @@ Three things to notice:
 
 This is what the `/health` endpoint and the Streamlit dashboard call. Cheap and exact for Chroma (`collection.count()`), one DynamoDB `scan(Select="COUNT")` for AWS, one `get_document_count()` for Azure AI Search.
 
-- 🫏 **Donkey:** The shelf-counter — how many envelopes are currently on the warehouse shelves.
+- 🚚 **Courier:** The shelf-counter — how many envelopes are currently on the warehouse shelves.
 
 ---
 
@@ -162,7 +162,7 @@ The "I'm about to re-ingest this file" hook. Implementation pattern is the same 
 
 Chroma uses `collection.get(where={"source_file": ...})`. DynamoDB scans with a Python filter. Azure AI Search uses an OData filter `source_file eq '...'`. None of them are O(1) — they all touch every chunk for that file. Cheap because chunks-per-file is small; not cheap if you call it for every file in a re-ingest loop, so the ingestion path uses it selectively.
 
-- 🫏 **Donkey:** `delete_by_source` is the warehouse clear-out request — "any envelope from this letter, off the shelves please" — so the next pre-sort doesn't pile new envelopes on top of stale ones.
+- 🚚 **Courier:** `delete_by_source` is the warehouse clear-out request — "any envelope from this letter, off the shelves please" — so the next pre-sort doesn't pile new envelopes on top of stale ones.
 
 ---
 
@@ -196,7 +196,7 @@ Three properties worth highlighting:
 | `CLOUD_PROVIDER=aws` | `DynamoDBVectorStore` |
 | `CLOUD_PROVIDER=azure` | `AzureSearchVectorStore` |
 
-- 🫏 **Donkey:** The factory is the yard sign at the gate — it tells the donkey which warehouse to walk into today. Flip the sign, the donkey reroutes; the warehouse rules (the four methods) are identical inside.
+- 🚚 **Courier:** The factory is the yard sign at the gate — it tells the courier which warehouse to walk into today. Flip the sign, the courier reroutes; the warehouse rules (the four methods) are identical inside.
 
 ---
 
@@ -204,16 +204,16 @@ Three properties worth highlighting:
 
 If you ever add a fourth provider (Pinecone, Qdrant, OpenSearch, …), this is the test sheet:
 
-| Invariant | Why | 🫏 Donkey |
+| Invariant | Why | 🚚 Courier |
 |-----------|-----|-----------|
 | `upsert` is idempotent on `chunk.id` | Re-ingest must not duplicate | Re-walking the route does not pile up duplicate envelopes |
 | Embedding model used at `upsert` and `search` is the same | Mismatched models silently destroy recall | The warehouse uses one GPS-coordinate format on the loading bay and the search desk |
-| `search` returns `DocumentChunk` with `score` populated, higher = better | Chat engine and gap detector compare scores across results | Every returned envelope carries a closeness stamp the donkey can sort on |
-| `top_k` is a cap, not a guarantee | Sparse stores must not crash | The donkey accepts "I only have 3 envelopes that fit" without complaining |
+| `search` returns `DocumentChunk` with `score` populated, higher = better | Chat engine and gap detector compare scores across results | Every returned envelope carries a closeness stamp the courier can sort on |
+| `top_k` is a cap, not a guarantee | Sparse stores must not crash | The courier accepts "I only have 3 envelopes that fit" without complaining |
 | All metadata fields persisted at `upsert` are restored on `search` | `source_file`, `heading`, etc. are needed for citations and `delete_by_source` | Every envelope keeps its address card from loading bay to search desk |
 | `delete_by_source(file)` removes every chunk whose `source_file == file`, returns the count | Re-ingestion needs this to avoid pile-up | The warehouse clears out every envelope from a given letter on request |
 
-- 🫏 **Donkey:** Six warehouse-door rules. Honour them and any new GPS warehouse can serve the donkey on day one without changing the chat engine, gap detector, or ingestion code.
+- 🚚 **Courier:** Six warehouse-door rules. Honour them and any new GPS warehouse can serve the courier on day one without changing the chat engine, gap detector, or ingestion code.
 
 ---
 

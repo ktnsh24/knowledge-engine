@@ -25,8 +25,8 @@ class Settings(BaseSettings):
     api_keys_enabled: bool = False
     master_api_key: str = "dev-key"
 
-    # Donkey analogy — always on
-    donkey_analogy_enabled: bool = True
+    # Courier analogy — always on
+    courier_analogy_enabled: bool = True
 
     # --- LLM ---
     # Local

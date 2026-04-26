@@ -36,13 +36,13 @@ All three providers implement [`BaseVectorStore`](vectorstore-interface-deep-div
 | Score returned | `1 - cosine_distance` | min-max normalised cosine | native `@search.score` |
 | When to use | Dev, demos, offline work | AWS-native, cheap-at-small-scale | Azure-native, large corpora |
 
-- 🫏 **Donkey:** Three GPS warehouses with the same loading-bay rules. The local barn is free but small; the AWS depot trades search speed for being dirt cheap; the Azure hub is a proper hyperscale warehouse with HNSW conveyor belts built in.
+- 🚚 **Courier:** Three GPS warehouses with the same loading-bay rules. The local barn is free but small; the AWS depot trades search speed for being dirt cheap; the Azure hub is a proper hyperscale warehouse with HNSW conveyor belts built in.
 
 ---
 
 ## Head-to-Head Comparison
 
-| Concern | Chroma | DynamoDB | Azure AI Search | 🫏 Donkey |
+| Concern | Chroma | DynamoDB | Azure AI Search | 🚚 Courier |
 |---------|--------|----------|-----------------|-----------|
 | Setup time | `docker compose up -d chromadb` | `terraform apply` (one DynamoDB table) | `terraform apply` (Search service + index auto-created on first upsert) | Local barn opens in seconds; AWS depot needs a one-time blueprint; Azure hub needs a building permit but auto-arranges the shelves on first use |
 | Cold-start latency | None (already running) | None (REST call) | None (REST call) | All three warehouses are open 24/7 |
@@ -50,7 +50,7 @@ All three providers implement [`BaseVectorStore`](vectorstore-interface-deep-div
 | Per-upsert cost | €0 | ~€0.0001 (Titan embed + DynamoDB write units) | ~€0.00002 (OpenAI embed + Search write units) | Same per-trip economics on the loading bay as the search desk |
 | Auto-scales | No (single Docker container) | Yes (DynamoDB on-demand) | Yes (replica + partition counts) | Local barn has fixed capacity; the cloud depots and hubs grow on demand |
 | Eventual consistency | Strongly consistent | Eventually consistent for the scan | Near-real-time index | The local barn's shelves are always in sync; the cloud warehouses may take a moment to show new envelopes |
-| Best at | Iterating on chunking + embedding choices | Sub-100k corpora at AWS-cheap rates | Hybrid search, faceting, filters at scale | Pick the warehouse that matches the kind of trips the donkey makes most |
+| Best at | Iterating on chunking + embedding choices | Sub-100k corpora at AWS-cheap rates | Hybrid search, faceting, filters at scale | Pick the warehouse that matches the kind of trips the courier makes most |
 
 ---
 
@@ -100,13 +100,13 @@ docker compose up -d chromadb
 ollama pull nomic-embed-text
 ```
 
-| Strength | Caveat | 🫏 Donkey |
+| Strength | Caveat | 🚚 Courier |
 |----------|--------|-----------|
-| Free, fast, runs offline | Single container — no replication | The local barn is great for the donkey's apprenticeship — no rent, no internet, but if the barn floods you start over |
+| Free, fast, runs offline | Single container — no replication | The local barn is great for the courier's apprenticeship — no rent, no internet, but if the barn floods you start over |
 | HNSW from day one | One collection — no multi-tenant story | The conveyor belt is fancy but there's only one warehouse floor for everything |
 | Bound embedder = no model mismatch | If Ollama is down, both upsert and search fail | The same GPS-coordinate stamp is used at both desks; if the stamper is broken, nothing moves |
 
-- 🫏 **Donkey:** The local barn is the donkey's training ground — same loading bay and search desk as the cloud warehouses, but free, single-container, and offline-friendly.
+- 🚚 **Courier:** The local barn is the courier's training ground — same loading bay and search desk as the cloud warehouses, but free, single-container, and offline-friendly.
 
 ---
 
@@ -152,13 +152,13 @@ cd terraform/aws && terraform apply
 # Bedrock model access for Titan must be granted in the AWS console once.
 ```
 
-| Strength | Caveat | 🫏 Donkey |
+| Strength | Caveat | 🚚 Courier |
 |----------|--------|-----------|
 | Cents per query at small scale | Full-table scan — costs grow with corpus size | The AWS depot search clerk reads every shelf for every question; fine for a small depot, brutal at warehouse-chain scale |
 | No Neptune / OpenSearch / OCU bills | Manual cosine = no HNSW recall benefits | The depot has no conveyor belt, just hand-carting; cheaper rent, slower per-trip |
 | Min-max normalisation fixes Titan low-score problem | Scores are not comparable across queries (each is rescaled to its own max) | The closeness stamps are honest *within one trip* but you can't compare today's stamps against last week's |
 
-- 🫏 **Donkey:** The AWS depot is the cheapest cloud warehouse the donkey can use because we skipped buying the conveyor belt (Neptune / OpenSearch). The donkey carts envelopes by hand — fine until the depot grows past ~100k envelopes.
+- 🚚 **Courier:** The AWS depot is the cheapest cloud warehouse the courier can use because we skipped buying the conveyor belt (Neptune / OpenSearch). The courier carts envelopes by hand — fine until the depot grows past ~100k envelopes.
 
 ---
 
@@ -207,13 +207,13 @@ cd terraform/azure && terraform apply
 # Index is auto-created on first /ingest/run.
 ```
 
-| Strength | Caveat | 🫏 Donkey |
+| Strength | Caveat | 🚚 Courier |
 |----------|--------|-----------|
 | HNSW from day one, scales to tens of millions | Search SKU has a monthly minimum even idle | The Azure hub is a proper hyperscale warehouse with conveyor belts — but you pay rent even when no trips are happening |
 | Auto-creates the index with the right schema | Schema change = drop and re-create the index | The warehouse arranges its own shelves on opening day; renovating means closing the floor |
 | Filters and faceting on metadata | Filter syntax is OData, not Python | Aisle-by-aisle search filters work, but you have to learn the warehouse's local dialect |
 
-- 🫏 **Donkey:** The Azure hub is the proper hyperscale warehouse — the donkey gets a real conveyor belt (HNSW) and aisle filters, in exchange for a fixed monthly rent.
+- 🚚 **Courier:** The Azure hub is the proper hyperscale warehouse — the courier gets a real conveyor belt (HNSW) and aisle filters, in exchange for a fixed monthly rent.
 
 ---
 
@@ -227,13 +227,13 @@ cd terraform/azure && terraform apply
 | Azure deployment, any scale | Azure AI Search | The native HNSW path is correctly priced for any size |
 | Hybrid keyword + vector search needed | Azure AI Search | Built in; not implemented in the others today |
 
-| Decision | 🫏 Donkey |
+| Decision | 🚚 Courier |
 |----------|-----------|
-| Local barn for everyday training | The donkey practises in the free barn before going on real trips |
+| Local barn for everyday training | The courier practises in the free barn before going on real trips |
 | AWS depot for small AWS deployments | When AWS is the yard, the cheap depot is the right warehouse for a few thousand envelopes |
 | Azure hub for any Azure deployment | When Azure is the yard, the conveyor-belt hub is the only one that scales without surprise bills |
 
-- 🫏 **Donkey:** The contract guarantees the donkey can walk into any of the three. Pick the warehouse whose rent and shelf-count match your trip volume.
+- 🚚 **Courier:** The contract guarantees the courier can walk into any of the three. Pick the warehouse whose rent and shelf-count match your trip volume.
 
 ---
 

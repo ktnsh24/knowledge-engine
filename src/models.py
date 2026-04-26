@@ -70,7 +70,7 @@ class WikiPage(BaseModel):
     topic_id: str
     title: str
     content: str                     # full markdown content
-    donkey_analogy: str              # the 🫏 analogy for this topic
+    courier_analogy: str              # the 🚚 analogy for this topic
     sources: list[str] = []         # source files used
     connected_topics: list[str] = [] # related topic IDs
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -102,7 +102,7 @@ class AnswerSource(str, Enum):
 
 class ChatResponse(BaseModel):
     answer: str
-    donkey_analogy: str              # always included
+    courier_analogy: str              # always included
     sources: list[str] = []         # source files used
     topics: list[str] = []          # topics retrieved from graph
     retrieval_score: float = 0.0
@@ -153,7 +153,7 @@ class WikiCandidate(BaseModel):
     id: str
     question: str
     answer: str
-    donkey_analogy: str
+    courier_analogy: str
     gap_id: str                      # links back to the KnowledgeGap
     status: str = "pending"          # "pending" | "promoted" | "discarded"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

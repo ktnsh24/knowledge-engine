@@ -7,7 +7,7 @@
 
 ## Table of Contents
 
-- [🫏 Phase 2 Metric Overview](#phase-2-metrics)
+- [🚚 Phase 2 Metric Overview](#phase-2-metrics)
 - [Lab 4: LLM-as-Judge Faithfulness — "Is the AI making things up?"](#lab-4-llm-as-judge)
 - [Lab 5: Answer Correctness — "Is the answer actually right?"](#lab-5-answer-correctness)
 - [Lab 6: Completeness Score — "Did the answer cover everything?"](#lab-6-completeness)
@@ -17,7 +17,7 @@
 
 ---
 
-## 🫏 Phase 2 Metric Overview {#phase-2-metrics}
+## 🚚 Phase 2 Metric Overview {#phase-2-metrics}
 
 These 5 metrics existed in the rag-chatbot design docs but were **never implemented**.
 
@@ -29,7 +29,7 @@ These 5 metrics existed in the rag-chatbot design docs but were **never implemen
 | **Hallucination Rate (%)** | `has_hallucination` was per-query boolean, not an aggregate | `hallucination_rate = hallucinators / total × 100` across eval run |
 | **Cost Per Query** | Mentioned in `metrics-deep-dive.md` but never tracked in evaluator | Token counts × provider rates → € per query |
 
-> 🫏 The donkey always delivered. But until now, nobody was measuring:
+> 🚚 The courier always delivered. But until now, nobody was measuring:
 > — did it deliver the RIGHT thing? (correctness)
 > — did it invent extra packages that weren't ordered? (hallucination rate)
 > — did it deliver ALL the ordered packages? (completeness)
@@ -274,7 +274,7 @@ curl -X POST http://localhost:8200/chat/ \
 | Single aspect | ___ | 1 |
 | Multi-aspect | ___ | 3 |
 
-> 🫏 Single-aspect = one package ordered. Multi-aspect = three packages. Completeness = did the donkey deliver ALL of them?
+> 🚚 Single-aspect = one package ordered. Multi-aspect = three packages. Completeness = did the courier deliver ALL of them?
 
 ### What you learned
 
@@ -402,7 +402,7 @@ total = input_cost + output_cost       # = $0.001 per query
 | × 11 questions | ~$0.011 |
 | × 10 eval runs per project | ~$0.11 total |
 
-> 🫏 The donkey's wages: local = volunteer, AWS = €0.001/delivery, Azure = €0.0009/delivery.
+> 🚚 The courier's wages: local = volunteer, AWS = €0.001/delivery, Azure = €0.0009/delivery.
 > Cost per query × daily queries = monthly bill. Know this before deploying.
 
 ### Experiment 8c — Compare verbosity: short vs long answer

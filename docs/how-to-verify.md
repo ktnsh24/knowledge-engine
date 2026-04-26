@@ -8,7 +8,7 @@
 
 ## Table of Contents
 
-- [🫏 Donkey Analogy First](#-donkey-analogy-first)
+- [🚚 Courier Analogy First](#-courier-analogy-first)
 - [Part 1 — Seeing the Connected Map](#part-1--seeing-the-connected-map)
 - [Part 2 — How the Knowledge Base Grows Over Time](#part-2--how-the-knowledge-base-grows-over-time)
 - [Part 3 — Measuring Knowledge Growth Numerically](#part-3--measuring-knowledge-growth-numerically)
@@ -17,9 +17,9 @@
 
 ---
 
-## 🫏 Donkey Analogy First
+## 🚚 Courier Analogy First
 
-> 🫏 The knowledge engine is a donkey delivering packages along a road map (the graph) — verifying = checking the roads are actually being drawn, not just trusting it.
+> 🚚 The knowledge engine is a courier delivering packages along a road map (the graph) — verifying = checking the roads are actually being drawn, not just trusting it.
 
 ---
 
@@ -199,13 +199,13 @@ curl -X POST http://localhost:8200/eval/run | python3 -m json.tool
 
 Track these metrics over time:
 
-| Metric | What it tells you | Growing means... | 🫏 Donkey |
+| Metric | What it tells you | Growing means... | 🚚 Courier |
 |--------|-------------------|------------------|-----------|
-| `avg_retrieval` | Are relevant chunks being found? | More/better indexed docs | Did the donkey grab the right backpacks from the GPS warehouse on average? Higher = better-stocked shelves |
-| `avg_context_recall` | Does the context cover the full answer? | Graph expansion working better | Did the donkey + paper map together pull in all the backpacks needed, not just the closest ones? Higher = the map is well-drawn |
-| `avg_faithfulness` | Is the LLM sticking to the context? | LLM not hallucinating | Did the donkey copy from the backpacks instead of inventing? Higher = the donkey is reading the cargo, not making up parcels |
-| `avg_completeness` | Are all aspects of the question answered? | Richer knowledge base | Did the donkey deliver every item on the order, not just the easy ones? Higher = the warehouse has the missing items now |
-| `hallucination_rate_pct` | How often does the LLM make things up? | Lower = knowledge base improving | What fraction of trips had at least one invented parcel? Lower = the donkey trusts the cargo over its own pocket more often |
+| `avg_retrieval` | Are relevant chunks being found? | More/better indexed docs | Did the courier grab the right parcels from the GPS warehouse on average? Higher = better-stocked shelves |
+| `avg_context_recall` | Does the context cover the full answer? | Graph expansion working better | Did the courier + paper map together pull in all the parcels needed, not just the closest ones? Higher = the map is well-drawn |
+| `avg_faithfulness` | Is the LLM sticking to the context? | LLM not hallucinating | Did the courier copy from the parcels instead of inventing? Higher = the courier is reading the parcels, not making up parcels |
+| `avg_completeness` | Are all aspects of the question answered? | Richer knowledge base | Did the courier deliver every item on the order, not just the easy ones? Higher = the warehouse has the missing items now |
+| `hallucination_rate_pct` | How often does the LLM make things up? | Lower = knowledge base improving | What fraction of trips had at least one invented parcel? Lower = the courier trusts the parcels over its own pocket more often |
 | `overall_pass_rate` | Overall quality gate | Should increase over time | The pass mark on the report card across all metrics — climbs as the warehouse and map fill in the obvious gaps |
 
 ### Track improvement in a simple table
@@ -273,7 +273,7 @@ cat scripts/lab-results/local/lab-results-report.md | head -50
 ✅ topics > 0            → graph extraction worked
 ✅ /wiki/graph returns relationships  → graph is connected (not isolated nodes)
 ✅ answer includes "topics" field     → graph expansion is happening
-✅ answer includes 🫏 donkey analogy  → LLM system prompt is working
+✅ answer includes 🚚 courier analogy  → LLM system prompt is working
 ✅ wiki-output/ has .md files         → wiki is growing from feedback
 ✅ golden-questions.yaml growing      → eval set is improving from bad answers
 ✅ eval pass_rate ≥ 0.65              → quality gate passes

@@ -20,7 +20,7 @@
 - [The per-page recipe](#the-per-page-recipe)
 - [Cost per generation](#cost-per-generation)
 - [When to trigger a rebuild](#when-to-trigger-a-rebuild)
-- [🫏 Donkey explainer — the brochure printer](#-donkey-explainer--the-brochure-printer)
+- [🚚 Courier explainer — the brochure printer](#-courier-explainer--the-brochure-printer)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -58,10 +58,10 @@ class WikiGenerator:
     async def generate_page(self, topic: Topic) -> WikiPage: ...
 ```
 
-| Method | When it runs | What it does | 🫏 Donkey |
+| Method | When it runs | What it does | 🚚 Courier |
 |--------|--------------|--------------|-----------|
 | `generate_all()` | Called by `POST /wiki/rebuild`; iterates over every topic in the graph and calls `generate_page()` per topic, then writes an index | Full rebuild — one article per known town plus a table of contents | Print every brochure in the catalogue, then print the catalogue itself; one full run of the brochure printer |
-| `generate_page(topic)` | Called per-topic by `generate_all()`; can also be called directly if you want to refresh a single article | Pulls chunks from the vector store, neighbours from the graph, asks the LLM for the article + 🫏 analogy, writes the file | Print one tourist brochure for one specific town using everything the post office has filed about it |
+| `generate_page(topic)` | Called per-topic by `generate_all()`; can also be called directly if you want to refresh a single article | Pulls chunks from the vector store, neighbours from the graph, asks the LLM for the article + 🚚 analogy, writes the file | Print one tourist brochure for one specific town using everything the post office has filed about it |
 
 `generate_all` deliberately wraps each `generate_page` in `try/except` and
 logs the failure but **does not abort the run** — one bad topic should not
@@ -76,7 +76,7 @@ self.output_path = Path(settings.wiki_output_path) / "topics"
 self.output_path.mkdir(parents=True, exist_ok=True)
 ```
 
-| Path | Contents | 🫏 Donkey |
+| Path | Contents | 🚚 Courier |
 |------|----------|-----------|
 | `wiki-output/topics/{topic_id}.md` | One article per topic, written by the LLM, decorated with a `## 🔗 Connected Topics` footer linking to neighbours | One brochure per town, with the back cover listing the next towns over so readers can follow the road |
 | `wiki-output/index.md` | Auto-generated index linking to every topic article, sorted by title | The brochure rack at the front of the post office — every printed brochure indexed for the next visitor |
@@ -104,7 +104,7 @@ connected_names = [t.name for t in connected]
 
 result = await self.llm.generate_wiki_page(topic.name, context)
 content = result["content"]
-donkey  = result["donkey_analogy"]
+courier  = result["courier_analogy"]
 
 if connected_names:
     footer = f"\n\n## 🔗 Connected Topics\n\n"
@@ -112,16 +112,16 @@ if connected_names:
     content += footer
 ```
 
-| Step | Detail | 🫏 Donkey |
+| Step | Detail | 🚚 Courier |
 |------|--------|-----------|
-| 1. Wider net than chat | `wiki_top_k = max(settings.rag_top_k, 8)` — chat asks for 5 chunks, wiki asks for at least 8 | Brochure-writing needs more raw material than a single-trip delivery; the donkey loads a heavier backpack just for printing day |
-| 2. Use topic NAME as the query | `vector_store.search(topic.name, …)` — not the topic id, not a synthetic prompt | The donkey asks the warehouse for "RAG Pipeline" the way a reader would search, not the slug `rag-pipeline` |
+| 1. Wider net than chat | `wiki_top_k = max(settings.rag_top_k, 8)` — chat asks for 5 chunks, wiki asks for at least 8 | Brochure-writing needs more raw material than a single-trip delivery; the courier loads a heavier parcel just for printing day |
+| 2. Use topic NAME as the query | `vector_store.search(topic.name, …)` — not the topic id, not a synthetic prompt | The courier asks the warehouse for "RAG Pipeline" the way a reader would search, not the slug `rag-pipeline` |
 | 3. Pull 2-hop neighbours | `get_connected_topics(topic.id, max_hops=2)` — same hop budget as the chat engine | Walk two streets out from this town to find the neighbours worth linking to from the brochure back-cover |
-| 4. Single LLM call | `llm.generate_wiki_page(topic_name, context)` returns `{"content": ..., "donkey_analogy": ...}` | One commission to the writer per brochure — no chained prompts, no retries on partial output |
+| 4. Single LLM call | `llm.generate_wiki_page(topic_name, context)` returns `{"content": ..., "courier_analogy": ...}` | One commission to the writer per brochure — no chained prompts, no retries on partial output |
 | 5. Append a navigation footer | `## 🔗 Connected Topics` with markdown links to `{name.lower().replace(' ', '-')}.md` | The back cover gets stamped with neighbour-town addresses so the next reader can follow the road |
 
 The returned `WikiPage` model carries `topic_id`, `title`, `content`,
-`donkey_analogy`, `sources`, `connected_topics`, `generated_at`, `version`,
+`courier_analogy`, `sources`, `connected_topics`, `generated_at`, `version`,
 and `quality_score` — see [`src/models.py`](../../src/models.py) for the
 full schema.
 
@@ -132,7 +132,7 @@ full schema.
 Wiki generation is the most LLM-heavy operation in the whole project — one
 `generate_wiki_page` call per topic. Order-of-magnitude cost:
 
-| Provider | Per-page input tokens (≈ 8 chunks × 800 chars ÷ 4 ≈ 1,600 in + topic name) | Per-page output (≈ 800 word article ≈ 1,000 tokens) | Per-page USD | 🫏 Donkey |
+| Provider | Per-page input tokens (≈ 8 chunks × 800 chars ÷ 4 ≈ 1,600 in + topic name) | Per-page output (≈ 800 word article ≈ 1,000 tokens) | Per-page USD | 🚚 Courier |
 |----------|---|---|---|-----------|
 | Local (Ollama llama3.2) | ~1,800 in | ~1,000 out | $0.00 — runs on your machine | The local barn writer charges nothing but takes longer and writes a shorter brochure |
 | AWS (Bedrock Claude Haiku 4.5) | ~1,800 in × $0.00025/1k ≈ $0.00045 | ~1,000 out × $0.00125/1k ≈ $0.00125 | ≈ $0.0017 per page | The AWS depot writer is fast and cheap per brochure; 100 topics ≈ $0.17 |
@@ -156,7 +156,7 @@ intended triggers are:
 |---------|--------------|-----|
 | After a large ingest job | A human or CI script following `POST /ingest/run` | Many new topics likely landed in the graph; their brochures don't exist yet |
 | After promoting a batch of candidates | The reviewer | Promoted answers are now in `verified-answers.md`; the next ingest will pull them in but their dedicated topic articles need refreshing |
-| Periodically (cron / GH Actions) | Robot stable hand | Catches drift when source repos change without an explicit ingest |
+| Periodically (cron / GH Actions) | Robot depot hand | Catches drift when source repos change without an explicit ingest |
 | Never, in dev | You | If you are iterating on prompts, generating 100 articles per change is wasteful — call `generate_page()` for the one topic you care about |
 
 The `WIKI_REBUILD_ON_CHANGE` setting exists in `src/config.py` (default
@@ -166,19 +166,19 @@ behaviour.
 
 ---
 
-## 🫏 Donkey explainer — the brochure printer
+## 🚚 Courier explainer — the brochure printer
 
-The wiki generator is the donkey's brochure printer. Once a week (or whenever
-you tell it to) the donkey walks down the cartographer's list of every town on
+The wiki generator is the courier's brochure printer. Once a week (or whenever
+you tell it to) the courier walks down the cartographer's list of every town on
 the paper map and, for each one, pulls eight pages from the GPS warehouse that
 mention that town, walks two streets out to find the neighbours, and hands the
 whole bundle to the writer at the desk. The writer drafts a tourist brochure
-for that town with a 🫏 analogy as the closing paragraph; the donkey staples a
+for that town with a 🚚 analogy as the closing paragraph; the courier staples a
 back cover listing the neighbour-town addresses and files the brochure in the
 brochure rack at the front of the post office. The next time the post office
 does its pre-sort, those brochures are sorted alongside the originals — so the
 next reader who asks about the town finds the brochure, not just the raw
-delivery notes.
+shipping manifests.
 
 ---
 

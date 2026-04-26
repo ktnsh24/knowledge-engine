@@ -24,7 +24,7 @@
 - [Cost — same questions, three very different bills](#cost--same-questions-three-very-different-bills)
 - [When to use which](#when-to-use-which)
 - [Common gotchas](#common-gotchas)
-- [🫏 Donkey explainer — three writers at the same desk](#-donkey-explainer--three-writers-at-the-same-desk)
+- [🚚 Courier explainer — three writers at the same desk](#-courier-explainer--three-writers-at-the-same-desk)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -38,23 +38,23 @@ concrete subclasses of `BaseLLM`, picked at startup by `create_llm()` based on
 the `CLOUD_PROVIDER` env var. The interface guarantees the chat engine, wiki
 generator, and graph extractor never know which one they are talking to.
 
-| Provider | Class | When it runs | Default model | Cost shape | 🫏 Donkey |
+| Provider | Class | When it runs | Default model | Cost shape | 🚚 Courier |
 |----------|-------|--------------|---------------|------------|-----------|
-| Local | `OllamaLLM` | `CLOUD_PROVIDER=local` (default for dev/labs) | `llama3.2` over `http://localhost:11434/api/generate` | Free — your CPU/GPU | The home-stable donkey — slow but eats free hay; fine for practice runs |
-| AWS | `BedrockLLM` | `CLOUD_PROVIDER=aws` | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` via Bedrock Converse API | $0.00025 / 1K input · $0.00125 / 1K output (per `TOKEN_COSTS["aws"]` in evaluator) | The AWS courier-donkey — paid per parcel, fast, knows the EU corridors |
-| Azure | `AzureOpenAILLM` | `CLOUD_PROVIDER=azure` | `gpt-4o-mini` via Azure OpenAI deployment | $0.00015 / 1K input · $0.00060 / 1K output (per `TOKEN_COSTS["azure"]`) | The Azure courier-donkey — also paid per parcel, slightly cheaper, different paperwork at the gate |
+| Local | `OllamaLLM` | `CLOUD_PROVIDER=local` (default for dev/labs) | `llama3.2` over `http://localhost:11434/api/generate` | Free — your CPU/GPU | The in-house courier — slow but eats free fuel; fine for practice runs |
+| AWS | `BedrockLLM` | `CLOUD_PROVIDER=aws` | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` via Bedrock Converse API | $0.00025 / 1K input · $0.00125 / 1K output (per `TOKEN_COSTS["aws"]` in evaluator) | The AWS courier-courier — paid per parcel, fast, knows the EU corridors |
+| Azure | `AzureOpenAILLM` | `CLOUD_PROVIDER=azure` | `gpt-4o-mini` via Azure OpenAI deployment | $0.00015 / 1K input · $0.00060 / 1K output (per `TOKEN_COSTS["azure"]`) | The Azure courier-courier — also paid per parcel, slightly cheaper, different paperwork at the gate |
 
 ---
 
 ## Provider comparison at a glance
 
-| Aspect | Ollama (local) | AWS Bedrock | Azure OpenAI | 🫏 Donkey |
+| Aspect | Ollama (local) | AWS Bedrock | Azure OpenAI | 🚚 Courier |
 |--------|----------------|-------------|--------------|-----------|
-| Transport | Raw HTTP via `httpx` to `localhost:11434` | `boto3` `bedrock-runtime` SDK, sync, wrapped in `run_in_executor` | `openai.AsyncAzureOpenAI` async client | Three different ways to hand a job to the writing donkey — slip it under the door, hand it to an AWS courier, post it via the Azure mail-room |
-| API style | Single `POST /api/generate` with `{model, prompt, stream:false, options:{temperature}}` | `client.converse(modelId, system=[…], messages=[…], inferenceConfig={…})` | `chat.completions.create(model=deployment, messages=[…])` | The donkey can be briefed by hand-written note (Ollama), formal courier docket (Bedrock), or a structured email thread (Azure) |
-| Async story | Truly async via `httpx.AsyncClient` | Sync SDK ⇒ wrapped with `asyncio.get_event_loop().run_in_executor` to avoid blocking | Native async SDK | Local donkey responds at the door; AWS donkey gets a courier; Azure donkey replies on the same async wire |
-| Auth | None — assumes Ollama is running locally | `boto3` default credential chain (env vars, profile, IRSA) | `azure_openai_api_key` from settings | Local donkey trusts whoever knocks; AWS donkey checks an IAM badge; Azure donkey checks an API key card |
-| Cost per query | $0 — you pay in laptop heat | Cheapest on-cloud Claude tier (Haiku 4.5) | Cheapest on-cloud GPT tier (4o-mini) | Free hay for the home donkey, AWS hay-bill, Azure hay-bill — the cheapest each cloud sells |
+| Transport | Raw HTTP via `httpx` to `localhost:11434` | `boto3` `bedrock-runtime` SDK, sync, wrapped in `run_in_executor` | `openai.AsyncAzureOpenAI` async client | Three different ways to hand a job to the writing courier — slip it under the door, hand it to an AWS courier, post it via the Azure mail-room |
+| API style | Single `POST /api/generate` with `{model, prompt, stream:false, options:{temperature}}` | `client.converse(modelId, system=[…], messages=[…], inferenceConfig={…})` | `chat.completions.create(model=deployment, messages=[…])` | The courier can be briefed by hand-written note (Ollama), formal courier docket (Bedrock), or a structured email thread (Azure) |
+| Async story | Truly async via `httpx.AsyncClient` | Sync SDK ⇒ wrapped with `asyncio.get_event_loop().run_in_executor` to avoid blocking | Native async SDK | Local courier responds at the door; AWS courier gets a courier; Azure courier replies on the same async wire |
+| Auth | None — assumes Ollama is running locally | `boto3` default credential chain (env vars, profile, IRSA) | `azure_openai_api_key` from settings | Local courier trusts whoever knocks; AWS courier checks an IAM badge; Azure courier checks an API key card |
+| Cost per query | $0 — you pay in laptop heat | Cheapest on-cloud Claude tier (Haiku 4.5) | Cheapest on-cloud GPT tier (4o-mini) | Free fuel for the in-house courier, AWS fuel bill, Azure fuel bill — the cheapest each cloud sells |
 | Ideal use | Lab runs, CI tests, offline demos | Production EU traffic; pairs with DynamoDB stores | Production Azure-anchored stacks; pairs with Cosmos + AI Search | Practice trips at home, paid trips out of the AWS depot, paid trips out of the Azure hub |
 
 ---
@@ -69,7 +69,7 @@ class OllamaLLM(BaseLLM):
         self.model    = settings.ollama_llm_model          # llama3.2
 
     async def complete(self, question, context,
-                       system_prompt=DONKEY_SYSTEM_PROMPT, temperature=0.1):
+                       system_prompt=COURIER_SYSTEM_PROMPT, temperature=0.1):
         prompt = f"{system_prompt}\n\n---CONTEXT---\n{context}\n\n---QUESTION---\n{question}"
         async with httpx.AsyncClient(timeout=120) as client:
             resp = await client.post(
@@ -87,7 +87,7 @@ class OllamaLLM(BaseLLM):
 - **120-second timeout.** Local llama3.2 on CPU can take 30–90 s for a long answer; the chat engine and ingest pipeline are happy to wait.
 - **`stream=False`.** Knowledge engine does not stream tokens to clients — every endpoint returns the full string.
 - **`extract_topics_and_relations()`** truncates input to `text[:3000]` chars before prompting and uses a JSON-only system prompt; it slices the result between the first `{` and last `}` and falls back to `{"topics":[], "relationships":[]}` on parse failure.
-- **`generate_wiki_page()`** truncates context to 4000 chars and asks for the strict five-section structure (analogy / definition / how / why / connections); the donkey analogy is post-extracted by scanning for `🫏`.
+- **`generate_wiki_page()`** truncates context to 4000 chars and asks for the strict five-section structure (analogy / definition / how / why / connections); the courier analogy is post-extracted by scanning for `🚚`.
 
 ---
 
@@ -102,7 +102,7 @@ class BedrockLLM(BaseLLM):
                                      region_name=settings.aws_region)
 
     async def complete(self, question, context,
-                       system_prompt=DONKEY_SYSTEM_PROMPT, temperature=0.1):
+                       system_prompt=COURIER_SYSTEM_PROMPT, temperature=0.1):
         return await asyncio.get_event_loop().run_in_executor(
             None, self._sync_complete, question, context, system_prompt, temperature
         )
@@ -142,7 +142,7 @@ class AzureOpenAILLM(BaseLLM):
         self.deployment = settings.azure_openai_llm_deployment   # gpt-4o (default in code)
 
     async def complete(self, question, context,
-                       system_prompt=DONKEY_SYSTEM_PROMPT, temperature=0.1):
+                       system_prompt=COURIER_SYSTEM_PROMPT, temperature=0.1):
         response = await self.client.chat.completions.create(
             model=self.deployment,
             messages=[
@@ -166,9 +166,9 @@ class AzureOpenAILLM(BaseLLM):
 
 ## Auth & secrets — what each provider needs
 
-| Provider | Required env vars | Where they live | What breaks if missing | 🫏 Donkey |
+| Provider | Required env vars | Where they live | What breaks if missing | 🚚 Courier |
 |----------|-------------------|-----------------|------------------------|-----------|
-| Ollama | `OLLAMA_BASE_URL`, `OLLAMA_LLM_MODEL` (defaults work locally) | `.env` / `Settings` | `httpx.ConnectError` on first `complete()` if the Ollama daemon isn't running | The home donkey only works if the stable door is open and the lamp is on |
+| Ollama | `OLLAMA_BASE_URL`, `OLLAMA_LLM_MODEL` (defaults work locally) | `.env` / `Settings` | `httpx.ConnectError` on first `complete()` if the Ollama daemon isn't running | The in-house courier only works if the depot door is open and the lamp is on |
 | AWS Bedrock | Standard AWS creds (env / profile / role) plus `AWS_REGION`, `AWS_BEDROCK_LLM_MODEL` | `.env` + AWS credential chain | `botocore.exceptions.NoCredentialsError` or `AccessDeniedException` from Bedrock | The AWS courier needs an IAM badge before it will pick up parcels at the depot |
 | Azure OpenAI | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_API_VERSION`, `AZURE_OPENAI_LLM_DEPLOYMENT` | `.env` | `openai.AuthenticationError` or `openai.NotFoundError` (wrong deployment name) at construction time | The Azure courier needs a key card and the right room number or it cannot enter the building |
 
@@ -187,54 +187,54 @@ TOKEN_COSTS = {
 }
 ```
 
-| Provider | Input $/1K tok | Output $/1K tok | Implied cost of a 600-in / 400-out chat | 🫏 Donkey |
+| Provider | Input $/1K tok | Output $/1K tok | Implied cost of a 600-in / 400-out chat | 🚚 Courier |
 |----------|----------------|-----------------|------------------------------------------|-----------|
-| Local | 0 | 0 | $0.0000 — only laptop electricity | The home donkey runs on free hay — only the electric bill notices |
-| AWS Bedrock Haiku 4.5 | 0.00025 | 0.00125 | ≈ $0.00065 per query | The AWS courier charges per backpack carried plus a heavier fee for what it writes back |
+| Local | 0 | 0 | $0.0000 — only laptop electricity | The in-house courier runs on free fuel — only the electric bill notices |
+| AWS Bedrock Haiku 4.5 | 0.00025 | 0.00125 | ≈ $0.00065 per query | The AWS courier charges per parcel carried plus a heavier fee for what it writes back |
 | Azure OpenAI GPT-4o-mini | 0.00015 | 0.00060 | ≈ $0.00033 per query | The Azure courier is a touch cheaper per parcel and a touch cheaper per reply |
 
 These figures are what the evaluator's [`CostScore`](evaluation-framework-deep-dive.md#what-the-evaluator-actually-measures)
 multiplies the per-query token count against, so every report card carries a real
-hay-bill column.
+fuel bill column.
 
 ---
 
 ## When to use which
 
-| Scenario | Pick | Why | 🫏 Donkey |
+| Scenario | Pick | Why | 🚚 Courier |
 |----------|------|-----|-----------|
-| First-time setup, lab sweeps, CI | Ollama | Free, deterministic enough at temperature 0.1, no network egress | Practice runs use the home donkey — no bill, no AWS bill, no Azure bill |
-| Production EU traffic with DynamoDB stores | Bedrock | Same provider boundary as DynamoDB vector + graph stores; one IAM surface | Same depot for letters and the donkey — fewer key-cards to manage |
+| First-time setup, lab sweeps, CI | Ollama | Free, deterministic enough at temperature 0.1, no network egress | Practice runs use the in-house courier — no bill, no AWS bill, no Azure bill |
+| Production EU traffic with DynamoDB stores | Bedrock | Same provider boundary as DynamoDB vector + graph stores; one IAM surface | Same depot for letters and the courier — fewer key-cards to manage |
 | Existing Azure tenant / Cosmos DB shop | Azure OpenAI | Pairs naturally with Cosmos DB + Azure AI Search; cheapest tier (gpt-4o-mini) | The Azure hub already runs the warehouse and map-room — keep the writer there too |
-| Eval lab #19 LLM-as-judge | Bedrock or Azure | Local llama3.2 is too unreliable as a judge of faithfulness; cloud models score more consistently | The judge in the report-card factory needs better handwriting than the home donkey can manage |
+| Eval lab #19 LLM-as-judge | Bedrock or Azure | Local llama3.2 is too unreliable as a judge of faithfulness; cloud models score more consistently | The judge in the report-card factory needs better handwriting than the in-house courier can manage |
 
 ---
 
 ## Common gotchas
 
-| Gotcha | Where it bites | Fix | 🫏 Donkey |
+| Gotcha | Where it bites | Fix | 🚚 Courier |
 |--------|----------------|-----|-----------|
-| Ollama model not pulled (`ollama pull llama3.2`) | First `/chat` call hangs then 404s | Run `ollama pull llama3.2` once after install | The home donkey can't write a note about a town it has never read about |
+| Ollama model not pulled (`ollama pull llama3.2`) | First `/chat` call hangs then 404s | Run `ollama pull llama3.2` once after install | The in-house courier can't write a note about a town it has never read about |
 | `boto3` not installed in `local` runs | Import error if anything pulls `bedrock.py` eagerly | Imports are deferred inside the factory branches; do not move them to the top of `factory.py` | The AWS courier never wakes up if the AWS uniform isn't even unpacked |
 | Bedrock 200 K context limit, but EU Haiku has stricter throughput quotas | Long ingest runs trigger `ThrottlingException` | Reduce `RAG_CHUNK_SIZE` or add jitter; ingest already serialises one file at a time | The AWS courier can only carry so many parcels per hour — overload it and it drops the load |
-| Azure deployment name vs model name confusion | `openai.NotFoundError: deployment not found` | `AZURE_OPENAI_LLM_DEPLOYMENT` must match the **Azure deployment** name, not the OpenAI model | Calling for the wrong room number at the Azure hub means the donkey is sent to an empty desk |
-| Default Azure deployment in `config.py` is `gpt-4o`, but cost table assumes `gpt-4o-mini` | Real Azure bills come back ~10× higher than the report card suggests | Set `AZURE_OPENAI_LLM_DEPLOYMENT=gpt-4o-mini` to match the documented cost line | The hay-bill on the report card is for the small donkey — if you sent the big one, expect a bigger invoice |
+| Azure deployment name vs model name confusion | `openai.NotFoundError: deployment not found` | `AZURE_OPENAI_LLM_DEPLOYMENT` must match the **Azure deployment** name, not the OpenAI model | Calling for the wrong room number at the Azure hub means the courier is sent to an empty desk |
+| Default Azure deployment in `config.py` is `gpt-4o`, but cost table assumes `gpt-4o-mini` | Real Azure bills come back ~10× higher than the report card suggests | Set `AZURE_OPENAI_LLM_DEPLOYMENT=gpt-4o-mini` to match the documented cost line | The fuel bill on the report card is for the small courier — if you sent the big one, expect a bigger invoice |
 
 ---
 
-## 🫏 Donkey explainer — three writers at the same desk
+## 🚚 Courier explainer — three writers at the same desk
 
-🫏 The writing-desk in the stable has one set of rules — taped up by `BaseLLM` —
-and three different donkeys take turns at it. The **home donkey** (Ollama
+🚚 The writing-desk in the depot has one set of rules — taped up by `BaseLLM` —
+and three different couriers take turns at it. The **in-house courier** (Ollama
 llama3.2) is slow and unpaid; it works overnight on lab runs and never sends a
-bill. The **AWS courier-donkey** (Bedrock Claude Haiku 4.5) shows its IAM badge
-at the depot, picks up the job, writes a tidier note, and charges per hay-bale
-of input and per hay-bale of output — output costs five times more, same as the
-DE world's WCU > RCU. The **Azure courier-donkey** (GPT-4o-mini) does the same
+bill. The **AWS courier-courier** (Bedrock Claude Haiku 4.5) shows its IAM badge
+at the depot, picks up the job, writes a tidier note, and charges per fuel unit
+of input and per fuel unit of output — output costs five times more, same as the
+DE world's WCU > RCU. The **Azure courier-courier** (GPT-4o-mini) does the same
 job through a different mail-room — checks an API key card, follows a deployment
-name into the right room, charges fractionally less, and carries the same 🫏
-analogy back stamped on the delivery note. Same desk. Same three jobs. Three
-different donkeys. The factory just decides which one gets the seat today.
+name into the right room, charges fractionally less, and carries the same 🚚
+analogy back stamped on the shipping manifest. Same desk. Same three jobs. Three
+different couriers. The factory just decides which one gets the seat today.
 
 ---
 

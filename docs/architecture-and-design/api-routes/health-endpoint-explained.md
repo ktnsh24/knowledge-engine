@@ -13,13 +13,13 @@
 - [Internal flow](#internal-flow)
 - [`curl` example](#curl-example)
 - [Error cases](#error-cases)
-- [🫏 Donkey explainer — the doorman's window](#-donkey-explainer--the-doormans-window)
+- [🚚 Courier explainer — the doorman's window](#-courier-explainer--the-doormans-window)
 
 ---
 
 ## Endpoint summary
 
-| Method | Path | Auth | Purpose | 🫏 Donkey |
+| Method | Path | Auth | Purpose | 🚚 Courier |
 |--------|------|------|---------|-----------|
 | GET | `/health/` | none | Quick liveness + dependency check — proves the FastAPI app is running, the configured provider is reachable, and the vector store + graph store both answer their `count()` calls | The doorman's window — shouts back chunk count, topic count, and which writer is on shift today, or "degraded" with the reason if anything is wrong |
 
@@ -56,10 +56,10 @@ field set than the model documents (`vector_store_chunks`, `graph_topics`,
 `error`) — Pydantic accepts the extra fields because the response is
 serialised loosely; the *contract* you can rely on across versions is:
 
-| Field | Type | Source | 🫏 Donkey |
+| Field | Type | Source | 🚚 Courier |
 |-------|------|--------|-----------|
 | `status` | `"healthy"` \| `"degraded"` | Built by the route based on whether the store calls succeeded | Doorman's verdict — green light or amber light |
-| `provider` | `local` \| `aws` \| `azure` | `settings.cloud_provider.value` | Which stable is on shift today — local barn, AWS depot, or Azure hub |
+| `provider` | `local` \| `aws` \| `azure` | `settings.cloud_provider.value` | Which depot is on shift today — local barn, AWS depot, or Azure hub |
 | `vector_store_chunks` (current code) / `total_chunks` (model) | int | `vector_store.chunk_count()` | Current parcel count on the GPS warehouse shelves |
 | `graph_topics` (current code) / `total_topics` (model) | int | `graph_store.topic_count()` | Current town count on the paper map |
 | `error` (degraded only) | string | `str(e)` from the failing call | The exact reason the doorman is shouting amber instead of green |
@@ -138,12 +138,12 @@ livenessProbe:
 
 ## Error cases
 
-| Trigger | Response | 🫏 Donkey |
+| Trigger | Response | 🚚 Courier |
 |---------|----------|-----------|
 | Vector store unreachable (Chroma not started, DynamoDB throttle, AI Search 503) | `200` with `status="degraded"` and `error=<exception>` | Doorman shouts amber and reads the warehouse's complaint over the wall |
 | Graph store unreachable (Neo4j down, DynamoDB throttle, Cosmos 429) | Same — `status="degraded"` with the exception message | Doorman shouts amber and reads the map-room's complaint |
-| App not yet finished its lifespan (`app.state.vector_store` not set) | `AttributeError` caught → `status="degraded"` with the attribute error message | The donkey is still being saddled — doorman waves people off with "not ready yet" |
-| Both stores empty (`chunks=0`, `topics=0`) | `200` with `status="healthy"` and zero counts | Stable is awake but nothing's been delivered yet — green light, empty warehouse |
+| App not yet finished its lifespan (`app.state.vector_store` not set) | `AttributeError` caught → `status="degraded"` with the attribute error message | The courier is still being saddled — doorman waves people off with "not ready yet" |
+| Both stores empty (`chunks=0`, `topics=0`) | `200` with `status="healthy"` and zero counts | Depot is awake but nothing's been delivered yet — green light, empty warehouse |
 
 The route never returns a 5xx today. That is intentional: callers (load
 balancers, monitors) treat any non-200 as "the *application* is down" and
@@ -151,14 +151,14 @@ that is not what we mean by "the vector store is slow."
 
 ---
 
-## 🫏 Donkey explainer — the doorman's window
+## 🚚 Courier explainer — the doorman's window
 
 The health window is the small grille at the front door. When a passer-by
 knocks, the doorman runs two quick checks: ask the warehouse how many parcels
 are on the shelves, and ask the map room how many towns are drawn. If both
 answer, the doorman shouts back "healthy" plus the two counts and the name of
-the stable on shift. If either is silent, the doorman still shouts back —
-"degraded" plus whichever room complained — so the visitor knows the stable
+the depot on shift. If either is silent, the doorman still shouts back —
+"degraded" plus whichever room complained — so the visitor knows the depot
 is awake even though the warehouse or the map room needs help. The door is
 never bolted shut by the health check itself; that decision belongs to whoever
 is reading the doorman's reply.

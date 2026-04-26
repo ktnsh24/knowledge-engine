@@ -2,8 +2,8 @@
 # Used by src/evaluation/evaluator.py to measure knowledge engine quality.
 # Add new questions as you discover gaps (👎 feedback auto-appends here).
 #
-# 🫏 These questions are the road inspection checklist.
-# If the donkey can answer them all well, the road is solid.
+# 🚚 These questions are the road inspection checklist.
+# If the courier can answer them all well, the road is solid.
 
 questions:
   # --- RAG & Retrieval ---

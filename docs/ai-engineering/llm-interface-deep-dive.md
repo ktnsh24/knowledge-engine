@@ -1,7 +1,7 @@
 # Deep Dive: The LLM Interface — `src/llm/base.py`
 
 > **Study order:** #13 · **Difficulty:** ★★☆☆☆ — abstract class is small, but it
-> hides three different jobs the donkey is asked to do (answer, extract, write a wiki page).
+> hides three different jobs the courier is asked to do (answer, extract, write a wiki page).
 >
 > **File:** [`src/llm/base.py`](../../src/llm/base.py) · **Implementations:**
 > [Ollama](llm-providers-deep-dive.md#1-ollama-local), [Bedrock](llm-providers-deep-dive.md#2-aws-bedrock),
@@ -20,7 +20,7 @@
 - [DE parallel — strategy pattern you already know](#de-parallel--strategy-pattern-you-already-know)
 - [Why three methods, not one](#why-three-methods-not-one)
 - [What every implementer must promise](#what-every-implementer-must-promise)
-- [🫏 Donkey explainer — the writing-desk rules](#-donkey-explainer--the-writing-desk-rules)
+- [🚚 Courier explainer — the writing-desk rules](#-courier-explainer--the-writing-desk-rules)
 - [Self-test questions](#self-test-questions)
 - [What to read next](#what-to-read-next)
 
@@ -32,12 +32,12 @@
 chat engine, the wiki generator, or the graph extractor will accept it. It is what
 lets `CLOUD_PROVIDER=local|aws|azure` swap one model for another with **zero code
 changes** in the rest of the project. Think of it as a job description posted on
-the stable wall: any donkey that wants to sit at the writing desk must be able to
+the depot wall: any courier that wants to sit at the writing desk must be able to
 do these three things, in this order, returning these shapes.
 
-It is **also** where the donkey analogy becomes a hard contract — the
-`DONKEY_SYSTEM_PROMPT` constant lives in this file and is wired into every chat
-call by default, so every answer the system ships is required to include a 🫏
+It is **also** where the courier analogy becomes a hard contract — the
+`COURIER_SYSTEM_PROMPT` constant lives in this file and is wired into every chat
+call by default, so every answer the system ships is required to include a 🚚
 analogy. That is not decoration; it is the project's signature.
 
 ---
@@ -48,7 +48,7 @@ analogy. That is not decoration; it is the project's signature.
 class BaseLLM(ABC):
     @abstractmethod
     async def complete(self, question: str, context: str,
-                       system_prompt: str = DONKEY_SYSTEM_PROMPT,
+                       system_prompt: str = COURIER_SYSTEM_PROMPT,
                        temperature: float = 0.1) -> str: ...
 
     @abstractmethod
@@ -58,11 +58,11 @@ class BaseLLM(ABC):
     async def generate_wiki_page(self, topic_name: str, context: str) -> dict: ...
 ```
 
-| # | Method | Inputs | Returns | Used by | 🫏 Donkey |
+| # | Method | Inputs | Returns | Used by | 🚚 Courier |
 |---|--------|--------|---------|---------|-----------|
-| 1 | `complete` | question + retrieved context + system prompt + temperature | plain answer string (with the 🫏 analogy embedded) | [Chat engine](chat-engine-deep-dive.md) — answer the user's question grounded in the GraphRAG context | The donkey at the writing desk taking a question plus the backpack contents and writing a delivery note that always begins with the donkey-on-road analogy |
-| 2 | `extract_topics_and_relations` | a chunk of markdown text | `{"topics": [...], "relationships": [...]}` JSON | [Graph extractor](graph-extractor-deep-dive.md) — turn each ingested chunk into nodes + edges for the paper map | The donkey reading the day's letters and pencilling in fresh towns and the roads between them onto the cartographer's draft map |
-| 3 | `generate_wiki_page` | a topic name + supporting chunks | `{"content": markdown, "donkey_analogy": "🫏 …"}` | [Wiki generator](wiki-generator-deep-dive.md) — write a per-topic article that is then re-ingested next run | The donkey writing a tourist brochure for a specific town using everything the post office has filed about it, then leaving it at the printer |
+| 1 | `complete` | question + retrieved context + system prompt + temperature | plain answer string (with the 🚚 analogy embedded) | [Chat engine](chat-engine-deep-dive.md) — answer the user's question grounded in the GraphRAG context | The courier at the writing desk taking a question plus the parcel contents and writing a shipping manifest that always begins with the courier-on-route analogy |
+| 2 | `extract_topics_and_relations` | a chunk of markdown text | `{"topics": [...], "relationships": [...]}` JSON | [Graph extractor](graph-extractor-deep-dive.md) — turn each ingested chunk into nodes + edges for the paper map | The courier reading the day's letters and pencilling in fresh towns and the roads between them onto the cartographer's draft map |
+| 3 | `generate_wiki_page` | a topic name + supporting chunks | `{"content": markdown, "courier_analogy": "🚚 …"}` | [Wiki generator](wiki-generator-deep-dive.md) — write a per-topic article that is then re-ingested next run | The courier writing a tourist brochure for a specific town using everything the post office has filed about it, then leaving it at the printer |
 
 All three methods are `async` because every concrete provider (Ollama HTTP, AWS Bedrock SDK, Azure OpenAI SDK) is I/O-bound — the chat engine is happy to await them in parallel with vector and graph lookups.
 
@@ -70,13 +70,13 @@ All three methods are `async` because every concrete provider (Ollama HTTP, AWS 
 
 ## The two system prompts (and one toggle)
 
-The file exports three constants that are arguably more important than the abstract methods, because they are what the donkey actually reads before every job:
+The file exports three constants that are arguably more important than the abstract methods, because they are what the courier actually reads before every job:
 
-| Constant | When it is used | What it forbids / allows | 🫏 Donkey |
+| Constant | When it is used | What it forbids / allows | 🚚 Courier |
 |----------|-----------------|--------------------------|-----------|
-| `DONKEY_SYSTEM_PROMPT` | Default for `complete()`. Used when the gap detector says HIGH or PARTIAL confidence. | Forces a 🫏 analogy on every answer; tells the donkey to ground claims in the provided context only. | The strict desk rule — the donkey may only write things it found in the backpack and must always sign off with the road analogy |
-| `DONKEY_SYSTEM_PROMPT_LAX` | Used when `SYSTEM_PROMPT_MODE=lax` (Tier-1 Lab 5). | Same 🫏 rule, but allows the donkey to add training-data knowledge if context is thin. | The relaxed desk rule used to demonstrate hallucination explosion when the donkey is allowed to invent |
-| `FALLBACK_SYSTEM_PROMPT` | Used when the gap detector returns `GAP` (no usable context). | Forces a `⚠️ This answer is from LLM training knowledge` banner before any other text, plus the 🫏 analogy. | The honest off-road rule — the donkey is allowed to deliver from memory but must stamp the parcel with a warning so the supervisor knows to verify it |
+| `COURIER_SYSTEM_PROMPT` | Default for `complete()`. Used when the gap detector says HIGH or PARTIAL confidence. | Forces a 🚚 analogy on every answer; tells the courier to ground claims in the provided context only. | The strict desk rule — the courier may only write things it found in the parcel and must always sign off with the road analogy |
+| `COURIER_SYSTEM_PROMPT_LAX` | Used when `SYSTEM_PROMPT_MODE=lax` (Tier-1 Lab 5). | Same 🚚 rule, but allows the courier to add training-data knowledge if context is thin. | The relaxed desk rule used to demonstrate hallucination explosion when the courier is allowed to invent |
+| `FALLBACK_SYSTEM_PROMPT` | Used when the gap detector returns `GAP` (no usable context). | Forces a `⚠️ This answer is from LLM training knowledge` banner before any other text, plus the 🚚 analogy. | The honest off-road rule — the courier is allowed to deliver from memory but must stamp the parcel with a warning so the supervisor knows to verify it |
 
 The helper `get_system_prompt(mode)` picks between strict and lax based on the
 `system_prompt_mode` setting. The chat engine selects the fallback variant only
@@ -152,26 +152,26 @@ behaviours, but the interface deliberately splits them so that:
 
 Every concrete provider — see [LLM Providers Deep Dive](llm-providers-deep-dive.md) — has to satisfy:
 
-| Promise | Why it matters | 🫏 Donkey |
+| Promise | Why it matters | 🚚 Courier |
 |---------|----------------|-----------|
-| `complete()` returns a non-empty string that **includes** the `🫏` character when the prompt asked for it | Gap-detector's `_extract_donkey()` searches for `🫏` to populate `ChatResponse.donkey_analogy`; missing it falls back to a generic line | If the donkey forgets to sign the delivery note with the road analogy, the dispatcher writes a default one in pencil — but the trip is logged as sloppy |
+| `complete()` returns a non-empty string that **includes** the `🚚` character when the prompt asked for it | Gap-detector's `_extract_courier()` searches for `🚚` to populate `ChatResponse.courier_analogy`; missing it falls back to a generic line | If the courier forgets to sign the shipping manifest with the road analogy, the dispatcher writes a default one in pencil — but the trip is logged as sloppy |
 | `extract_topics_and_relations()` always returns the keys `topics` and `relationships`, even on parse failure | The graph extractor calls `.get("topics", [])` and `.get("relationships", [])`; missing keys would crash an ingest mid-run | If the cartographer hands back a blank sheet instead of a malformed one, the post office can keep sorting the rest of the day's mail |
-| `generate_wiki_page()` returns both `content` and `donkey_analogy` keys | The wiki page model requires the analogy field; the writer would otherwise have to re-extract it | The brochure printer expects two envelopes — full text and a one-line tagline — every time, no exceptions |
+| `generate_wiki_page()` returns both `content` and `courier_analogy` keys | The wiki page model requires the analogy field; the writer would otherwise have to re-extract it | The brochure printer expects two envelopes — full text and a one-line tagline — every time, no exceptions |
 | All three methods are `async` and never block the event loop on long sync work | Bedrock's `boto3` is sync, so `BedrockLLM` wraps it with `run_in_executor` rather than calling it directly | Heavy Bedrock errands are handed to a courier so the dispatcher's desk stays free for the next request |
 
 ---
 
-## 🫏 Donkey explainer — the writing-desk rules
+## 🚚 Courier explainer — the writing-desk rules
 
-🫏 `BaseLLM` is the writing-desk in the corner of the stable. Three jobs land on
+🚚 `BaseLLM` is the writing-desk in the corner of the depot. Three jobs land on
 the desk every day: **answer the customer's question** (`complete`), **draw new
 towns onto the map** (`extract_topics_and_relations`), and **write the tourist
 brochure for one town** (`generate_wiki_page`). The desk has a strict rule taped
-to it (the `DONKEY_SYSTEM_PROMPT`): *every note must end with the donkey-on-road
-analogy*. Any donkey that wants to sit at this desk — local llama, AWS Claude
+to it (the `COURIER_SYSTEM_PROMPT`): *every note must end with the courier-on-route
+analogy*. Any courier that wants to sit at this desk — local llama, AWS Claude
 Haiku, Azure GPT-4o-mini — must promise it can do all three jobs without breaking
-the rule. The factory just decides which donkey gets the seat today, based on
-whether the stable is running on local hay, AWS Bedrock fuel, or Azure OpenAI.
+the rule. The factory just decides which courier gets the seat today, based on
+whether the depot is running on local fuel, AWS Bedrock fuel, or Azure OpenAI.
 
 ---
 
@@ -181,7 +181,7 @@ whether the stable is running on local hay, AWS Bedrock fuel, or Azure OpenAI.
    constant is its default `system_prompt` argument?
 2. Why are the provider imports lazy (inside `if/elif/else` branches) in
    `factory.py` rather than at the top of the file?
-3. What is the difference between `DONKEY_SYSTEM_PROMPT` and
+3. What is the difference between `COURIER_SYSTEM_PROMPT` and
    `FALLBACK_SYSTEM_PROMPT`, and which one does the chat engine pick when the
    gap detector returns `GAP`?
 4. Why does `extract_topics_and_relations()` swallow JSON parse failures and
