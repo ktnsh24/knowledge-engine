@@ -67,7 +67,7 @@ ruff = "^0.8.0"
 start = "uvicorn src.main:app --reload --port 8200"
 ui    = "streamlit run ui/app.py"
 ingest = "python -m src.ingestion.scanner"
-build-wiki = "python -m src.wiki.generator"
+build-wiki = "src.wiki.generator:main"
 test  = "pytest tests/ -v"
 lint  = "ruff check src/ tests/"
 

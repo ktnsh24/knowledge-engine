@@ -96,3 +96,12 @@ class WikiGenerator:
 
         index = Path(self.output_path).parent / "index.md"
         index.write_text("\n".join(lines), encoding="utf-8")
+
+
+def main() -> None:
+    """CLI entry point for the wiki generator (poetry script `build-wiki`)."""
+    import sys
+
+    print("build-wiki: WikiGenerator must be invoked via the API or programmatically.", file=sys.stderr)
+    print("See docs/architecture-and-design/api-routes/wiki-endpoint-explained.md", file=sys.stderr)
+    sys.exit(0)
